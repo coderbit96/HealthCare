@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #fbf8f3;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f4efe7;
+  --color-ink: #1c1917;
+  --color-ink-muted: #57534e;
+  --color-ink-subtle: #8a827a;
+  --color-line: #e7e0d5;
+
+  --color-brand: #0f5c56;
+  --color-brand-strong: #0b423e;
+  --color-brand-soft: #e3f0ed;
+  --color-brand-bright: #2f9d92;
+
+  --color-accent: #d9583c;
+  --color-accent-soft: #fbeae5;
+
+  --color-positive: #1f7a5c;
+  --color-warning: #b06a12;
+  --color-critical: #b4342a;
+
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+
+  --radius-card: 1rem;
+  --radius-panel: 1.5rem;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  margin: 0;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+}
+
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-bright);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

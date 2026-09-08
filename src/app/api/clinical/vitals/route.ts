@@ -1,0 +1,6 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requirePermission } from "@/lib/server-auth";
+import { Vital } from "@/models/Vital";
+const vitalSchema = z.object({ patient: z.string().length(24), temperature: z.number().min(30).max(45).optional(), systolic: z.number().int().min(40).max(260).optional(), diastolic: z.number().int().min(20).max(160).optional(), pulse: z.number().int().min(20).max(250).optional(), spo2: z.number().int().min(40).max(100).optional(), glucose: z.number().min(10).max(1000).optional(), intake: z.number().min(0).optional(), output: z.number().min(0).optional(), bedsideStatus: z.string().max(120).optional(), observation: z.string().max(1500).optional() });
+export async function POST(request: NextRequest) { try { const user = await requirePermission(request, "vitals:write"); const input = vitalSchema.parse(await request.json()); return NextResponse.json(await Vital.create({ ...input, recordedBy: user.firebaseUid }), { status: 201 }); } catch (error) { const message = error instanceof z.ZodError ? "Invalid vital signs" : error instanceof Error ? error.message : "Unable to record vitals"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 400 }); } }

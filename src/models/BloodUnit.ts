@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const BloodUnitSchema = new Schema({ unitNumber: { type: String, required: true, unique: true }, donor: { type: Schema.Types.ObjectId, ref: "BloodDonor" }, bloodGroup: { type: String, enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], required: true }, collectedAt: { type: Date, required: true }, expiresAt: { type: Date, required: true }, storage: String, status: { type: String, enum: ["available", "reserved", "issued", "expired", "discarded"], default: "available" }, issue: { patient: { type: Schema.Types.ObjectId, ref: "Patient" }, issuedAt: Date, issuedBy: String } }, { timestamps: true });
+export const BloodUnit = models.BloodUnit || model("BloodUnit", BloodUnitSchema);

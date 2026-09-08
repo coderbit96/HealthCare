@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const EmergencyCaseSchema = new Schema({ caseNumber: { type: String, required: true, unique: true }, patient: { type: Schema.Types.ObjectId, ref: "Patient", required: true }, arrivalAt: { type: Date, required: true }, triage: { type: String, enum: ["critical", "very_urgent", "urgent", "stable"], required: true }, bed: { type: Schema.Types.ObjectId, ref: "Bed" }, assignedStaff: [{ type: Schema.Types.ObjectId, ref: "User" }], ambulance: String, status: { type: String, enum: ["active", "admitted", "discharged"], default: "active", index: true } }, { timestamps: true });
+export const EmergencyCase = models.EmergencyCase || model("EmergencyCase", EmergencyCaseSchema);

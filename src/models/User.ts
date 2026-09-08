@@ -1,0 +1,4 @@
+import { Schema, model, models } from "mongoose";
+import { ROLES } from "@/lib/roles";
+const UserSchema = new Schema({ firebaseUid: { type: String, required: true, unique: true, index: true }, name: { type: String, required: true, trim: true }, email: { type: String, required: true, unique: true, lowercase: true, trim: true }, role: { type: String, enum: ROLES, required: true, index: true }, active: { type: Boolean, default: true, index: true }, status: { type: String, enum: ["active", "inactive", "suspended"], default: "active", index: true }, department: { type: String, trim: true }, permissions: [{ type: String }], patient: { type: Schema.Types.ObjectId, ref: "Patient" }, profile: { type: Schema.Types.ObjectId }, lastLoginAt: Date }, { timestamps: true });
+export const User = models.User || model("User", UserSchema);

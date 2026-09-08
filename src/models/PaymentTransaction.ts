@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const PaymentTransactionSchema = new Schema({ invoice: { type: Schema.Types.ObjectId, ref: "Invoice", required: true, index: true }, patient: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true }, type: { type: String, enum: ["payment", "advance", "refund", "adjustment"], required: true }, method: { type: String, enum: ["cash", "card", "upi", "online", "insurance"], required: true }, amount: { type: Number, required: true, min: 0.01 }, reference: String, receivedBy: { type: String, required: true }, note: String }, { timestamps: true });
+export const PaymentTransaction = models.PaymentTransaction || model("PaymentTransaction", PaymentTransactionSchema);

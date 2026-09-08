@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const NursingEntrySchema = new Schema({ patient: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true }, visit: { type: Schema.Types.ObjectId, ref: "MedicalRecord" }, admission: { type: Schema.Types.ObjectId, ref: "Admission" }, creatorUid: { type: String, required: true }, type: { type: String, enum: ["medication", "note", "observation", "intake_output", "handover", "bedside_status"], required: true }, content: Schema.Types.Mixed, updates: [{ by: String, at: Date, content: Schema.Types.Mixed }] }, { timestamps: true });
+export const NursingEntry = models.NursingEntry || model("NursingEntry", NursingEntrySchema);

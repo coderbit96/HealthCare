@@ -1,0 +1,7 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requirePermission } from "@/lib/server-auth";
+import { MedicalRecord } from "@/models/MedicalRecord";
+import { AuditLog } from "@/models/AuditLog";
+const schema = z.object({ patient: z.string().length(24), diagnosis: z.string().min(2), symptoms: z.array(z.string()).default([]), allergies: z.array(z.string()).default([]), existingConditions: z.array(z.string()).default([]), medicalHistory: z.string().max(5000).optional(), familyHistory: z.string().max(5000).optional(), surgeries: z.array(z.string()).default([]), procedures: z.array(z.string()).default([]), treatmentPlan: z.string().max(5000).optional(), notes: z.string().max(5000).optional() });
+export async function POST(request: NextRequest) { try { const user = await requirePermission(request, "clinical:write"); const record = await MedicalRecord.create({ ...schema.parse(await request.json()), clinicianUid: user.firebaseUid, status: "draft" }); await AuditLog.create({ actorUid: user.firebaseUid, action: "clinical_record.created", entityType: "MedicalRecord", entityId: record._id.toString(), after: record.toObject() }); return NextResponse.json(record, { status: 201 }); } catch (error) { const message = error instanceof z.ZodError ? "Invalid clinical record" : error instanceof Error ? error.message : "Unable to create record"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 400 }); } }

@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { PageShell } from "@/components/public/page-shell";
+import { DEPARTMENTS } from "@/lib/site-content";
+export default function Departments() { return <PageShell><main className="bg-canvas"><section className="mx-auto max-w-7xl px-5 py-20"><p className="font-semibold uppercase tracking-widest text-brand">Departments</p><h1 className="mt-3 text-5xl font-semibold">Care built around your needs.</h1><div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{DEPARTMENTS.map((department) => <Link className="rounded-2xl bg-white p-6 shadow-sm hover:shadow-md" href={`/departments/${department.toLowerCase().replaceAll(" ", "-")}`} key={department}><h2 className="font-semibold">{department}</h2><p className="mt-2 text-sm text-ink-muted">Specialist-led care and modern facilities.</p></Link>)}</div></section></main></PageShell>; }

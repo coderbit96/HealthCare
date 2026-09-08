@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function AccessDenied() { return <main className="grid min-h-screen place-items-center bg-canvas p-5 text-center"><div><p className="text-sm font-semibold uppercase tracking-wider text-brand">Access restricted</p><h1 className="mt-2 text-3xl font-semibold">You don’t have permission for this area.</h1><Link className="mt-6 inline-block rounded-lg bg-brand px-5 py-3 font-semibold text-white" href="/">Return to website</Link></div></main>; }

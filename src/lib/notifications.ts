@@ -1,0 +1,3 @@
+import { Notification } from "@/models/Notification";
+export type NotificationEvent = "appointment_booked" | "appointment_reminder" | "appointment_rescheduled" | "appointment_cancelled" | "lab_report_published" | "prescription_created" | "payment_received" | "invoice_generated" | "doctor_leave" | "staff_leave_decision" | "emergency_alert" | "low_stock" | "medicine_expiry";
+export async function notify(recipientUid: string, event: NotificationEvent, title: string, body: string, entity?: { type: string; id: string }) { return Notification.create({ recipientUid, event, title, body, entityType: entity?.type, entityId: entity?.id }); }

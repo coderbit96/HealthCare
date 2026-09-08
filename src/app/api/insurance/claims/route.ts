@@ -1,0 +1,7 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requirePermission } from "@/lib/server-auth";
+import { Counter } from "@/models/Counter";
+import { InsuranceClaim } from "@/models/InsuranceClaim";
+const schema = z.object({ patient: z.string().length(24), policy: z.string().length(24), invoice: z.string().length(24).optional(), documents: z.array(z.object({ name: z.string(), url: z.url() })).default([]), claimAmount: z.number().positive(), approvedAmount: z.number().min(0).default(0), rejectedAmount: z.number().min(0).default(0), status: z.enum(["created", "submitted", "under_review", "approved", "partially_approved", "rejected", "settled"]).default("created"), settlementReference: z.string().optional() });
+export async function POST(request: NextRequest) { try { await requirePermission(request, "billing:write"); const input = schema.parse(await request.json()); const counter = await Counter.findOneAndUpdate({ key: `claim:${new Date().getFullYear()}` }, { $inc: { value: 1 } }, { upsert: true, new: true }); return NextResponse.json(await InsuranceClaim.create({ ...input, claimNumber: `CLM-${new Date().getFullYear()}-${String(counter.value).padStart(6, "0")}` }), { status: 201 }); } catch (error) { const message = error instanceof z.ZodError ? "Invalid claim" : error instanceof Error ? error.message : "Unable to create claim"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 400 }); } }

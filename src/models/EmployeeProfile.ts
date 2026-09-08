@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const EmployeeProfileSchema = new Schema({ user: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true }, staffId: { type: String, required: true, unique: true }, designation: String, department: String, employmentType: { type: String, enum: ["full_time", "part_time", "contract", "intern"] }, joinedOn: Date, documents: [{ name: String, url: String }], salary: Number, overtimeRate: Number, performanceNotes: String, status: { type: String, enum: ["active", "on_leave", "inactive"], default: "active" } }, { timestamps: true });
+export const EmployeeProfile = models.EmployeeProfile || model("EmployeeProfile", EmployeeProfileSchema);

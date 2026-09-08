@@ -1,0 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requirePermission } from "@/lib/server-auth";
+import { Bed } from "@/models/Bed";
+import { BedAssignment } from "@/models/BedAssignment";
+export async function GET(request: NextRequest) { try { await requirePermission(request, "beds:read"); const status = request.nextUrl.searchParams.get("status"); const filter: Record<string, unknown> = {}; if (status) filter.status = status; const [beds, assignments] = await Promise.all([Bed.find(filter).populate("ward", "name type").populate("room", "roomNumber").sort({ bedNumber: 1 }).lean(), BedAssignment.find({ active: true }).populate("patient", "name uhid").lean()]); const assignmentByBed = new Map(assignments.map(assignment => [assignment.bed.toString(), assignment])); return NextResponse.json(beds.map(bed => ({ ...bed, assignment: assignmentByBed.get(bed._id.toString()) ?? null }))); } catch (error) { const message = error instanceof Error ? error.message : "Unable to load beds"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 401 }); } }

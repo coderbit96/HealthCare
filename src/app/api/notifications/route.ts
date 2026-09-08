@@ -1,0 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getRequestUser } from "@/lib/server-auth";
+import { Notification } from "@/models/Notification";
+export async function GET(request: NextRequest) { try { const user = await getRequestUser(request); return NextResponse.json(await Notification.find({ recipientUid: user.firebaseUid }).sort({ createdAt: -1 }).limit(50).lean()); } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Unauthorized" }, { status: 401 }); } }
+export async function PATCH(request: NextRequest) { try { const user = await getRequestUser(request); const { id } = await request.json(); const notification = await Notification.findOneAndUpdate({ _id: id, recipientUid: user.firebaseUid }, { readAt: new Date() }, { new: true }); if (!notification) return NextResponse.json({ error: "Notification not found" }, { status: 404 }); return NextResponse.json(notification); } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to update notification" }, { status: 400 }); } }

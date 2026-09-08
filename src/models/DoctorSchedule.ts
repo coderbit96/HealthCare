@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const DoctorScheduleSchema = new Schema({ doctorUid: { type: String, required: true, unique: true }, department: String, workingDays: [{ type: Number, min: 0, max: 6 }], startTime: { type: String, required: true }, endTime: { type: String, required: true }, consultationMinutes: { type: Number, default: 20 }, breakStart: String, breakEnd: String, dailyLimit: { type: Number, default: 30 }, blockedSlots: [{ startAt: Date, endAt: Date, reason: String }], leaveDates: [String] }, { timestamps: true });
+export const DoctorSchedule = models.DoctorSchedule || model("DoctorSchedule", DoctorScheduleSchema);
