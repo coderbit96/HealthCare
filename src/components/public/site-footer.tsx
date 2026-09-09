@@ -2,7 +2,7 @@ import { CalendarDays, Clock3, HeartHandshake, MapPin, Phone } from "lucide-reac
 import Link from "next/link";
 import { Brand } from "./brand";
 
-const exploreLinks = [["About us", "/about"], ["Our services", "/services"], ["Find a doctor", "/doctors"], ["Departments", "/departments"]];
+const exploreLinks = [["About us", "/about"], ["Our services", "/services"], ["Find a doctor", "/doctors"], ["Departments", "/departments"], ["Gallery", "/gallery"], ["Health articles", "/blogs"]];
 const patientLinks = [["Book an appointment", "/appointments"], ["Health packages", "/health-packages"], ["Facilities", "/facilities"], ["Contact the care team", "/contact"]];
 
 function FooterLinks({ title, links }: { title: string; links: string[][] }) {

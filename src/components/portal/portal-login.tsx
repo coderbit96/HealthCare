@@ -1,10 +1,10 @@
 "use client";
 
 import { GoogleAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, User } from "firebase/auth";
-import { AlertCircle, ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, ShieldCheck, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
 const inputClass = "w-full rounded-xl border border-line bg-surface py-3.5 pl-11 pr-4 text-sm font-medium text-ink outline-none transition placeholder:font-normal placeholder:text-ink-subtle hover:border-brand-bright/50 focus:border-brand-bright focus:ring-4 focus:ring-brand-bright/10";
@@ -17,6 +17,13 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
   const [error, setError] = useState<string>();
   const [message, setMessage] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{ tone: "success" | "error"; title: string; message: string }>();
+
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = window.setTimeout(() => setFeedback(undefined), 5000);
+    return () => window.clearTimeout(timer);
+  }, [feedback]);
 
   const createSession = async (user: User) => {
     const response = await fetch("/api/auth/session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ idToken: await user.getIdToken(true) }) });
@@ -26,6 +33,8 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
       await fetch("/api/auth/session", { method: "DELETE" });
       throw new Error("This sign-in page is restricted to hospital administrators.");
     }
+    setFeedback({ tone: "success", title: "Login successful", message: "Welcome back. Taking you to your workspace…" });
+    await new Promise((resolve) => window.setTimeout(resolve, 700));
     router.replace(payload.role === "patient" ? "/portal/patient" : "/portal/dashboard");
   };
 
@@ -35,7 +44,7 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
     setLoading(true);
     setError(undefined);
     try { await createSession((await signInWithEmailAndPassword(auth, email, password)).user); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "We could not sign you in."); }
+    catch (cause) { const text = cause instanceof Error ? cause.message : "We could not sign you in."; setError(text); setFeedback({ tone: "error", title: "Invalid login", message: "Please check your email and password, then try again." }); }
     finally { setLoading(false); }
   };
 
@@ -44,7 +53,7 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
     setLoading(true);
     setError(undefined);
     try { await createSession((await signInWithPopup(auth, new GoogleAuthProvider())).user); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "We could not sign you in."); }
+    catch (cause) { const text = cause instanceof Error ? cause.message : "We could not sign you in."; setError(text); setFeedback({ tone: "error", title: "Invalid login", message: "We could not complete this sign-in. Please try again." }); }
     finally { setLoading(false); }
   };
 
@@ -55,6 +64,8 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
   };
 
   return (
+    <>
+      {feedback && <div className={`fixed right-4 top-4 z-[100] flex w-[calc(100%-2rem)] max-w-sm items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-2xl sm:w-96 ${feedback.tone === "success" ? "border-positive/25 bg-emerald-50 text-positive" : "border-critical/25 bg-red-50 text-critical"}`} role={feedback.tone === "error" ? "alert" : "status"} aria-live="polite"><span className={`grid size-8 shrink-0 place-items-center rounded-full ${feedback.tone === "success" ? "bg-positive/15" : "bg-critical/15"}`}>{feedback.tone === "success" ? <CheckCircle2 size={19} /> : <XCircle size={19} />}</span><span className="flex-1"><span className="block font-bold">{feedback.title}</span><span className="mt-0.5 block leading-5 opacity-85">{feedback.message}</span></span></div>}
     <div className="rounded-[1.75rem] border border-white/70 bg-white p-6 text-ink shadow-[0_24px_70px_rgba(2,34,32,.28)] sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div className="grid size-12 place-items-center rounded-2xl bg-brand-soft text-brand"><ShieldCheck size={24} /></div>
@@ -100,5 +111,6 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
       {message && <p role="status" className="mt-5 rounded-xl bg-brand-soft p-3 text-sm leading-5 text-brand-strong">{message}</p>}
       {adminOnly ? <p className="mt-7 border-t border-line pt-5 text-center text-xs leading-5 text-ink-muted">Restricted to authorised hospital administrators.</p> : <p className="mt-7 border-t border-line pt-5 text-center text-xs leading-5 text-ink-muted">Need a patient account? <Link className="font-bold text-brand transition hover:text-brand-strong" href="/register">Register and verify email</Link>.</p>}
     </div>
+    </>
   );
 }

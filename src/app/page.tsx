@@ -1,4 +1,5 @@
-import { Activity, ArrowRight, Brain, HeartPulse, ShieldPlus, Sparkles, Stethoscope } from "lucide-react";
+import { Activity, ArrowRight, Brain, CheckCircle2, HeartPulse, ShieldPlus, Sparkles } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Hero } from "@/components/public/hero";
 import { PageShell } from "@/components/public/page-shell";
@@ -6,69 +7,20 @@ import { Reveal } from "@/components/public/reveal";
 import { Card, SectionHeading } from "@/components/ui";
 
 const services = [
-  { icon: HeartPulse, title: "Cardiology", text: "Advanced diagnosis and heartfelt cardiac care." },
-  { icon: Brain, title: "Neurology", text: "Specialist care for brain, spine and nerves." },
-  { icon: Activity, title: "Orthopaedics", text: "Move freely with focused bone and joint care." },
-  { icon: ShieldPlus, title: "Preventive care", text: "Stay ahead with tailored health screening." },
+  { icon: HeartPulse, title: "Cardiology", text: "Advanced diagnosis and thoughtful cardiac care." },
+  { icon: Brain, title: "Neurology", text: "Specialist care for brain, spine and nerve health." },
+  { icon: Activity, title: "Orthopaedics", text: "Focused bone, joint and movement care." },
+  { icon: ShieldPlus, title: "Preventive care", text: "Health screening built around your goals." },
 ];
 
 const reasons = ["Specialists across major medical disciplines", "Transparent appointments and thoughtful follow-up", "24/7 emergency readiness and modern facilities"];
 
 export default function Home() {
-  return <PageShell>
-    <Hero />
-    <main>
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24">
-        <Reveal>
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <SectionHeading eyebrow="A better standard of care" title="Expert care for the people you love." />
-            <Link className="inline-flex shrink-0 items-center gap-1.5 font-semibold text-brand transition hover:gap-2.5 hover:text-brand-strong" href="/services">View all services <ArrowRight size={17} /></Link>
-          </div>
-        </Reveal>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map((service, i) => (
-            <Reveal key={service.title} delay={i * .07}>
-              <Card className="h-full transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_-20px_rgba(28,25,23,.18)]">
-                <span className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand"><service.icon size={22} /></span>
-                <h3 className="mt-5 font-display text-xl font-semibold text-ink">{service.title}</h3>
-                <p className="mt-2 leading-7 text-ink-muted">{service.text}</p>
-              </Card>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+  return <PageShell><Hero /><main>
+    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24"><Reveal><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionHeading eyebrow="A better standard of care" title="Expert care for the people you love." /><Link className="inline-flex shrink-0 items-center gap-1.5 font-semibold text-brand transition hover:gap-2.5 hover:text-brand-strong" href="/services">View all services <ArrowRight size={17} /></Link></div></Reveal><div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{services.map((service, index) => <Reveal key={service.title} delay={index * .07}><Card className="h-full border border-line/70 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_-20px_rgba(28,25,23,.18)]"><span className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand"><service.icon size={22} /></span><h2 className="mt-5 font-display text-xl font-semibold text-ink">{service.title}</h2><p className="mt-2 leading-7 text-ink-muted">{service.text}</p><Link href="/services" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand">Learn more <ArrowRight size={15} /></Link></Card></Reveal>)}</div></section>
 
-      <section className="bg-surface-sunken">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 lg:grid-cols-2 lg:px-8 lg:py-24">
-          <Reveal>
-            <div className="grid aspect-[5/4] place-items-center rounded-[2rem] bg-brand p-10 text-center text-white shadow-[0_32px_64px_-28px_rgba(15,92,86,.55)]">
-              <div>
-                <Stethoscope className="mx-auto text-brand-bright" size={52} />
-                <p className="mt-6 text-xs font-semibold uppercase tracking-[.2em] text-brand-bright">One hospital. Every need.</p>
-                <p className="mt-3 font-display text-4xl font-semibold leading-tight">A team that sees the whole you.</p>
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={.1}>
-            <SectionHeading eyebrow="Why choose us" title="Clinical excellence, made personal.">
-              From your first call to recovery and beyond, our teams coordinate around a care plan that makes sense for you and your family.
-            </SectionHeading>
-            <ul className="mt-8 grid gap-4">
-              {reasons.map((item) => <li className="flex items-start gap-3 font-medium text-ink" key={item}><Sparkles size={18} className="mt-1 shrink-0 text-brand" />{item}</li>)}
-            </ul>
-            <Link href="/about" className="mt-9 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 font-semibold text-white transition hover:bg-ink/90">About our hospital <ArrowRight size={17} /></Link>
-          </Reveal>
-        </div>
-      </section>
+    <section className="overflow-hidden bg-surface-sunken"><div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 lg:grid-cols-2 lg:px-8 lg:py-24"><Reveal><div className="relative mx-auto max-w-xl"><div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] shadow-[0_28px_60px_-28px_rgba(28,25,23,.28)]"><Image src="/images/home/family-care.png" alt="Doctor providing care guidance to a mother and daughter" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" /></div><div className="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8"><p className="text-xs font-semibold uppercase tracking-[.14em] text-brand">Patient-first care</p><p className="mt-1 font-display text-xl font-semibold text-ink">Here for every chapter.</p></div></div></Reveal><Reveal delay={.1}><SectionHeading eyebrow="Why choose us" title="Clinical excellence, made personal.">From your first call to recovery and beyond, our teams coordinate around a care plan that makes sense for you and your family.</SectionHeading><ul className="mt-8 grid gap-4">{reasons.map((item) => <li className="flex items-start gap-3 font-medium text-ink" key={item}><CheckCircle2 size={19} className="mt-1 shrink-0 text-brand" />{item}</li>)}</ul><Link href="/about" className="mt-9 inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3.5 font-semibold text-white transition hover:bg-ink/90">About our hospital <ArrowRight size={17} /></Link></Reveal></div></section>
 
-      <section className="mx-auto max-w-3xl px-5 py-20 text-center lg:py-24">
-        <Reveal>
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-brand">Ready when you are</p>
-          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">Take the next step toward feeling better.</h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-ink-muted">Request an appointment online or call our care team. We’ll help find the right specialist for you.</p>
-          <Link className="mt-9 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 font-semibold text-white transition hover:bg-brand-strong" href="/appointments">Request an appointment <ArrowRight size={18} /></Link>
-        </Reveal>
-      </section>
-    </main>
-  </PageShell>;
+    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24"><div className="grid gap-8 rounded-[2rem] bg-brand-strong px-7 py-10 text-white sm:px-10 lg:grid-cols-[1.15fr_.85fr] lg:items-center lg:px-14 lg:py-14"><Reveal><p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[.18em] text-brand-bright"><Sparkles size={15} /> Ready when you are</p><h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold leading-tight sm:text-5xl">A clearer path to feeling better.</h2><p className="mt-5 max-w-xl text-lg leading-8 text-white/75">Request an appointment online or call our care team. We’ll help you find the right specialist.</p><Link className="mt-8 inline-flex items-center gap-2 rounded-md bg-white px-6 py-3.5 font-semibold text-brand-strong transition hover:bg-brand-soft" href="/appointments">Request an appointment <ArrowRight size={18} /></Link></Reveal><Reveal delay={.1}><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">{[["25+", "Experienced specialists"], ["24/7", "Emergency care"]].map(([value, label]) => <div key={label} className="rounded-2xl border border-white/15 bg-white/10 p-5"><p className="font-display text-4xl font-semibold text-brand-bright">{value}</p><p className="mt-1 font-medium text-white/80">{label}</p></div>)}</div></Reveal></div></section>
+  </main></PageShell>;
 }
