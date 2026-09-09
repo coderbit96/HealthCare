@@ -53,4 +53,6 @@ Public appointment requests are intentionally unauthenticated. They are schema-v
 
 Implemented: public website, authentication and RBAC, patient registration and portal, clinical (doctor/nurse) workspace, reception and billing, laboratory, pharmacy, HR and bed/ambulance operations, appointments, analytics, and audit logging.
 
-Not yet implemented: dedicated API routes for employee records, attendance, leave, payroll, ward/room management and refunds (models exist); operation theatre, blood bank and CMS admin screens; automated tests.
+Implemented operational APIs: employee records, attendance, self-service leave requests and approvals, payroll, ward and room management, and a controlled refund workflow. The refund flow reserves only paid funds, requires an administrator to approve and process it, and records the resulting payment transaction plus audit events.
+
+Still to be built: operation theatre, blood bank and CMS administration screens, plus automated tests (the existing route test file is a CI/emulator integration-test placeholder).
