@@ -17,8 +17,8 @@ for (const line of readFileSync(".env.local", "utf8").split("\n")) {
 }
 
 const password = process.env.DEMO_PASSWORD;
-if (!password || password.length < 8) {
-  console.error("DEMO_PASSWORD must be set in .env.local and contain at least 8 characters.");
+if (!password || password.length < 6) {
+  console.error("DEMO_PASSWORD must be set in .env.local and contain at least 6 characters.");
   process.exit(1);
 }
 
