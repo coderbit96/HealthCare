@@ -25,13 +25,14 @@ for (const line of readFileSync(envFile, "utf8").split("\n")) {
 }
 
 const email = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+const previousEmail = (process.env.ADMIN_PREVIOUS_EMAIL || "").trim().toLowerCase();
 const name = process.env.ADMIN_NAME || "Hospital Administrator";
 if (!email) { console.error("ADMIN_EMAIL is required."); process.exit(1); }
 
-// Firebase rejects passwords under 6 chars and known-breached ones; 16 random chars clears both.
+// Firebase rejects passwords under 6 characters. Production passwords should be much stronger.
 const generated = !process.env.ADMIN_PASSWORD;
 const password = process.env.ADMIN_PASSWORD || randomBytes(12).toString("base64url");
-if (password.length < 8) { console.error("ADMIN_PASSWORD must be at least 8 characters."); process.exit(1); }
+if (password.length < 6) { console.error("ADMIN_PASSWORD must be at least 6 characters."); process.exit(1); }
 
 const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || (process.env.FIREBASE_SERVICE_ACCOUNT_PATH ? readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, "utf8") : undefined);
 if (!raw) { console.error("Firebase Admin credentials missing (FIREBASE_SERVICE_ACCOUNT_JSON or _PATH)."); process.exit(1); }
@@ -46,21 +47,44 @@ try {
   console.log(`Updated existing Firebase user ${email}`);
 } catch (error) {
   if (error.code !== "auth/user-not-found") throw error;
-  firebaseUser = await auth.createUser({ email, password, emailVerified: true, displayName: name });
-  console.log(`Created Firebase user ${email}`);
+  if (previousEmail && previousEmail !== email) {
+    try {
+      const previousUser = await auth.getUserByEmail(previousEmail);
+      firebaseUser = await auth.updateUser(previousUser.uid, { email, password, emailVerified: true, displayName: name });
+      console.log(`Migrated Firebase user ${previousEmail} to ${email}`);
+    } catch (previousError) {
+      if (previousError.code !== "auth/user-not-found") throw previousError;
+    }
+  }
+  if (!firebaseUser) {
+    firebaseUser = await auth.createUser({ email, password, emailVerified: true, displayName: name });
+    console.log(`Created Firebase user ${email}`);
+  }
 }
 
 await mongoose.connect(process.env.MONGODB_URI);
 const users = mongoose.connection.collection("users");
 const now = new Date();
 await users.updateOne(
-  { email },
+  { firebaseUid: firebaseUser.uid },
   {
     $set: { firebaseUid: firebaseUser.uid, name, email, role: "admin", active: true, status: "active", permissions: [], updatedAt: now },
     $setOnInsert: { createdAt: now },
   },
   { upsert: true },
 );
+if (previousEmail && previousEmail !== email) {
+  const previousRecord = await users.findOne({ email: previousEmail }, { projection: { firebaseUid: 1 } });
+  if (previousRecord?.firebaseUid && previousRecord.firebaseUid !== firebaseUser.uid) {
+    await users.updateOne({ _id: previousRecord._id }, { $set: { active: false, status: "inactive", updatedAt: now } });
+    try {
+      await auth.updateUser(previousRecord.firebaseUid, { disabled: true });
+      console.log(`Retired previous demo administrator ${previousEmail}`);
+    } catch (error) {
+      if (error.code !== "auth/user-not-found") throw error;
+    }
+  }
+}
 console.log(`Linked MongoDB user record (role: admin)`);
 await mongoose.disconnect();
 
