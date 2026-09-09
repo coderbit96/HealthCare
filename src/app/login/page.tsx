@@ -1,2 +1,7 @@
-import { redirect } from "next/navigation";
-export default function Login() { redirect("/portal/login"); }
+import LoginPage from "@/app/portal/login/page";
+
+export const metadata = { title: "Sign in | Health Care .Pvt .Ltd" };
+
+export default function Login() {
+  return <LoginPage />;
+}

@@ -11,7 +11,7 @@ import { ToastProvider } from "@/components/ui";
 export function DashboardShell({ user, workspace, icon: Icon, navigation, title, children }: { user: AuthenticatedUser; workspace: string; icon: ComponentType<{ size?: number }>; navigation: string[]; title: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const logout = async () => { await fetch("/api/auth/session", { method: "DELETE" }); if (auth) await signOut(auth); router.replace("/portal/login"); };
+  const logout = async () => { await fetch("/api/auth/session", { method: "DELETE" }); if (auth) await signOut(auth); router.replace("/login"); };
 
   const nav = (
     <nav className="mt-7 grid gap-1" aria-label={`${workspace} sections`}>

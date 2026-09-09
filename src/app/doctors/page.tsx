@@ -1,9 +1,50 @@
-import { CalendarDays, Stethoscope } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
-import { SITE_IMAGES } from "@/lib/site-content";
+
 export const metadata = { title: "Doctors | Health Care .Pvt .Ltd" };
-const doctors = [{ initials: "AS", name: "Dr. Ananya Sen", specialty: "Consultant Cardiologist", focus: "Preventive cardiology & heart rhythm care" }, { initials: "RK", name: "Dr. Rohan Kapoor", specialty: "Consultant Neurologist", focus: "Stroke care & movement disorders" }, { initials: "PM", name: "Dr. Priya Mehta", specialty: "Consultant Paediatrician", focus: "Child development & family care" }, { initials: "AD", name: "Dr. Arjun Das", specialty: "Orthopaedic Surgeon", focus: "Sports medicine & joint replacement" }];
-export default function Doctors() { return <PageShell><main><section className="mx-auto max-w-7xl px-5 py-20 lg:px-8"><Reveal><p className="text-sm font-semibold uppercase tracking-[.2em] text-brand">Our specialists</p><h1 className="mt-3 font-display text-5xl font-semibold tracking-tight text-ink">Meet the people behind your care.</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-ink-muted">Experienced specialists who take time to understand you, not just your symptoms.</p></Reveal><div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{doctors.map((doctor, i) => <Reveal key={doctor.name} delay={i * .08}><article className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm"><div className="relative aspect-square"><Image src={SITE_IMAGES.doctor} alt={`${doctor.name}, ${doctor.specialty}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /><div className="absolute inset-0 grid place-items-center bg-brand-strong/10"><span className="rounded-full bg-white/85 px-3 py-1 font-semibold text-brand-strong">{doctor.initials}</span></div></div><div className="p-6"><p className="text-sm font-semibold text-brand">{doctor.specialty}</p><h2 className="mt-2 text-xl font-semibold text-ink">{doctor.name}</h2><p className="mt-2 text-sm leading-6 text-ink-muted">{doctor.focus}</p></div></article></Reveal>)}</div></section><section className="bg-brand-strong"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 px-5 py-12 text-white md:flex-row md:items-center lg:px-8"><div className="flex gap-4"><div className="rounded-xl bg-brand-bright/15 p-3 text-brand-bright"><Stethoscope /></div><div><h2 className="text-xl font-semibold">Need help finding the right specialist?</h2><p className="mt-1 text-white/70">Our care team will point you in the right direction.</p></div></div><Link className="inline-flex items-center gap-2 rounded-full bg-brand-bright px-5 py-3 font-semibold text-ink" href="/appointments"><CalendarDays size={17} />Request an appointment</Link></div></section></main></PageShell>; }
+
+const doctors = [
+  { initials: "AS", name: "Dr. Ananya Sen", department: "Cardiology", specialty: "Consultant Cardiologist", focus: "Preventive cardiology and heart rhythm care", image: "/images/doctors/dr-ananya-sen.png" },
+  { initials: "RK", name: "Dr. Rohan Kapoor", department: "Neurology", specialty: "Consultant Neurologist", focus: "Stroke care and movement disorders", image: "/images/doctors/dr-rohan-kapoor.png" },
+  { initials: "PM", name: "Dr. Priya Mehta", department: "Paediatrics", specialty: "Consultant Paediatrician", focus: "Child development and family care", image: "/images/doctors/dr-priya-mehta.png" },
+  { initials: "AD", name: "Dr. Arjun Das", department: "Orthopaedics", specialty: "Orthopaedic Surgeon", focus: "Sports medicine and joint replacement", image: "/images/doctors/dr-arjun-das.png" },
+  { initials: "SQ", name: "Dr. Sana Qureshi", department: "Women’s Health", specialty: "Consultant Obstetrician & Gynaecologist", focus: "Women’s wellness and maternity care", image: "/images/doctors/dr-sana-qureshi.png" },
+  { initials: "VN", name: "Dr. Vivek Nair", department: "General Medicine", specialty: "Consultant Physician", focus: "Everyday health and chronic care management", image: "/images/doctors/dr-vivek-nair.png" },
+];
+
+export default function Doctors() {
+  return (
+    <PageShell>
+      <main>
+        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+          <Reveal>
+            <p className="text-sm font-semibold uppercase tracking-[.2em] text-brand">Our specialists</p>
+            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">Meet the people behind your care.</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-ink-muted">Experienced specialists who take time to understand you, not just your symptoms.</p>
+          </Reveal>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {doctors.map((doctor, index) => (
+              <Reveal key={doctor.name} delay={index * 0.07}>
+                <article className="group h-full overflow-hidden rounded-panel border border-line bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/10">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
+                    <Image src={doctor.image} alt={`${doctor.name}, ${doctor.specialty}`} fill className="object-cover object-top transition duration-500 group-hover:scale-[1.04]" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/35 via-transparent to-transparent" />
+                    <span className="absolute bottom-4 left-4 rounded-full border border-white/40 bg-white/90 px-3 py-1 text-xs font-bold tracking-wide text-brand-strong shadow-sm">{doctor.department}</span>
+                    <span className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-brand-strong/85 text-sm font-bold text-white shadow-lg backdrop-blur">{doctor.initials}</span>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-sm font-bold text-brand">{doctor.specialty}</p>
+                    <h2 className="mt-2 font-display text-2xl font-semibold text-ink">{doctor.name}</h2>
+                    <p className="mt-3 text-sm leading-6 text-ink-muted">{doctor.focus}</p>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      </main>
+    </PageShell>
+  );
+}
