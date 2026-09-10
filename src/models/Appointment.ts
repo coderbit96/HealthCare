@@ -15,6 +15,8 @@ const AppointmentSchema = new Schema({
   walkIn: { type: Boolean, default: false },
   preferredDate: { type: Date, required: true },
   message: { type: String, maxlength: 1000 },
+  rescheduleRequired: { type: Boolean, default: false, index: true },
+  rescheduleReason: { type: String, maxlength: 500 },
   status: { type: String, enum: ["pending", "confirmed", "checked_in", "waiting", "in_consultation", "completed", "cancelled", "no_show"], default: "pending" },
 }, { timestamps: true });
 AppointmentSchema.index({ doctorUid: 1, startAt: 1 }, { unique: true, partialFilterExpression: { status: { $ne: "cancelled" }, doctorUid: { $exists: true }, startAt: { $exists: true } } });

@@ -13,6 +13,7 @@ const UserSchema = new Schema(
     status: { type: String, enum: ["active", "inactive", "suspended"], default: "active", index: true },
     department: { type: String, trim: true },
     permissions: [{ type: String }],
+    permissionMode: { type: String, enum: ["role_default", "custom"], default: "role_default" },
     patient: { type: Schema.Types.ObjectId, ref: "Patient" },
     profile: { type: Schema.Types.ObjectId },
     lastLoginAt: Date,
@@ -28,6 +29,7 @@ if (existingUser) {
   const missingFields: Record<string, { type: StringConstructor; trim?: boolean }> = {};
   if (!existingUser.schema.path("phone")) missingFields.phone = { type: String, trim: true };
   if (!existingUser.schema.path("profileImage")) missingFields.profileImage = { type: String };
+  if (!existingUser.schema.path("permissionMode")) missingFields.permissionMode = { type: String };
   if (Object.keys(missingFields).length) existingUser.schema.add(missingFields);
 }
 

@@ -38,8 +38,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { auth } from "@/lib/firebase";
-import { ROLE_LABELS, ROLES } from "@/lib/roles";
+import { hasPermission, ROLE_LABELS, ROLES } from "@/lib/roles";
 import type { AuthenticatedUser } from "@/lib/server-auth";
+import { PatientMasterWorkspace } from "@/components/portal/patient-master-workspace";
+import { StaffManagementWorkspace } from "@/components/portal/staff-management-workspace";
+import { LeaveManagementWorkspace, PayrollManagementWorkspace } from "@/components/portal/leave-payroll-workspace";
 
 const visitData = [
   { day: "Mon", visits: 38 },
@@ -92,6 +95,7 @@ const staffModules = [
   { icon: CalendarDays, label: "Appointments" },
   { icon: UsersRound, label: "Patients" },
   { icon: ClipboardList, label: "Clinical records" },
+  { icon: CalendarDays, label: "Leave" },
 ];
 
 const adminGroups = [
@@ -194,7 +198,7 @@ const moduleResources: Record<string, ModuleResource> = {
   Appointments: { endpoint: "/api/appointments", description: "Scheduled and requested appointments." },
   OPD: { endpoint: "/api/appointments", description: "Outpatient appointment queue and statuses." },
   IPD: { endpoint: "/api/admissions", description: "Active and recent inpatient admissions." },
-  "Clinical overview": { endpoint: "/api/analytics/overview?range=today", description: "Today’s clinical activity and capacity summary." },
+  "Clinical overview": { endpoint: "/api/clinical/overview", description: "Read-only administrator monitoring for consultations, admissions, diagnostics and doctor workload." },
   "Ward & Bed overview": { endpoint: "/api/beds", description: "Bed availability, occupancy and active assignments." },
   "Emergency overview": { endpoint: "/api/emergency?status=active", description: "Active emergency cases requiring attention." },
   Ambulance: { endpoint: "/api/ambulances", description: "Ambulance fleet status." },
@@ -607,6 +611,24 @@ export function PortalDashboard({ user }: { user: AuthenticatedUser }) {
                 </>
               )}
             </>
+          ) : activeModule === "Patients" ? (
+            <PatientMasterWorkspace onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "Doctors" ? (
+            <StaffManagementWorkspace role="doctor" onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "Nurses" ? (
+            <StaffManagementWorkspace role="nurse" onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "Receptionists" ? (
+            <StaffManagementWorkspace role="receptionist" onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "HR Staff" ? (
+            <StaffManagementWorkspace role="hr" onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "Lab Technicians" ? (
+            <StaffManagementWorkspace role="lab_technician" onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "Pharmacists" ? (
+            <StaffManagementWorkspace role="pharmacist" onBack={() => selectModule("Dashboard")} />
+          ) : activeModule === "Leave" ? (
+            <LeaveManagementWorkspace onBack={() => selectModule("Dashboard")} canReview={hasPermission(user.role, "leave:approve", user.permissions, user.permissionMode)} />
+          ) : activeModule === "Payroll" ? (
+            <PayrollManagementWorkspace onBack={() => selectModule("Dashboard")} />
           ) : (
             <ModuleWorkspace key={activeModule} module={activeModule} onBack={() => selectModule("Dashboard")} />
           )}

@@ -6,14 +6,14 @@ import { verifyIdToken, verifySessionCookie } from "@/lib/firebase-admin";
 import { User } from "@/models/User";
 
 export const SESSION_COOKIE = "health-care-session";
-export type AuthenticatedUser = { id: string; firebaseUid: string; name: string; email: string; phone?: string; department?: string; profileImage?: string; role: Role; active: boolean; permissions: Permission[]; patient?: string };
+export type AuthenticatedUser = { id: string; firebaseUid: string; name: string; email: string; phone?: string; department?: string; profileImage?: string; role: Role; active: boolean; permissions: Permission[]; permissionMode?: "role_default" | "custom"; patient?: string };
 
 async function findActiveUser(firebaseUid: string): Promise<AuthenticatedUser> {
   await connectToDatabase();
   const user = await User.findOne({ firebaseUid }).lean();
   if (!user) throw new Error("Account is not registered with this hospital");
   if (!user.active || user.status !== "active") throw new Error("Account is inactive");
-  return { id: user._id.toString(), firebaseUid: user.firebaseUid, name: user.name, email: user.email, phone: user.phone, department: user.department, profileImage: user.profileImage, role: user.role as Role, active: user.active, permissions: (user.permissions ?? []) as Permission[], patient: user.patient?.toString() };
+  return { id: user._id.toString(), firebaseUid: user.firebaseUid, name: user.name, email: user.email, phone: user.phone, department: user.department, profileImage: user.profileImage, role: user.role as Role, active: user.active, permissions: (user.permissions ?? []) as Permission[], permissionMode: user.permissionMode === "custom" ? "custom" : "role_default", patient: user.patient?.toString() };
 }
 async function identityFromRequest(request: NextRequest) {
   const bearer = request.headers.get("authorization")?.replace("Bearer ", "");
@@ -23,5 +23,5 @@ async function identityFromRequest(request: NextRequest) {
   return verifySessionCookie(session);
 }
 export async function getRequestUser(request: NextRequest) { return findActiveUser((await identityFromRequest(request)).uid); }
-export async function requirePermission(request: NextRequest, permission: Permission) { const user = await getRequestUser(request); if (!hasPermission(user.role, permission, user.permissions)) throw new Error("Forbidden"); return user; }
+export async function requirePermission(request: NextRequest, permission: Permission) { const user = await getRequestUser(request); if (!hasPermission(user.role, permission, user.permissions, user.permissionMode)) throw new Error("Forbidden"); return user; }
 export async function getServerSessionUser() { const session = (await cookies()).get(SESSION_COOKIE)?.value; if (!session) return null; try { return await findActiveUser((await verifySessionCookie(session)).uid); } catch { return null; } }

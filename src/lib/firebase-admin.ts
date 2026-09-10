@@ -23,5 +23,13 @@ export async function verifyIdToken(token: string) {
   return getAuth(adminApp()).verifyIdToken(token);
 }
 
+export async function createFirebaseUser({ email, password, displayName }: { email: string; password: string; displayName: string }) {
+  return getAuth(adminApp()).createUser({ email, password, displayName, emailVerified: true });
+}
+
+export async function deleteFirebaseUser(uid: string) {
+  return getAuth(adminApp()).deleteUser(uid);
+}
+
 export async function createSessionCookie(idToken: string) { return getAuth(adminApp()).createSessionCookie(idToken, { expiresIn: 1000 * 60 * 60 * 24 * 5 }); }
 export async function verifySessionCookie(cookie: string) { return getAuth(adminApp()).verifySessionCookie(cookie, true); }
