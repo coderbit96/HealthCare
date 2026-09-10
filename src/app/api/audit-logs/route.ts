@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuditLog } from "@/models/AuditLog";
 import { requirePermission } from "@/lib/server-auth";
-
-export async function GET(request: NextRequest) {
-  try {
-    await requirePermission(request, "reports:read");
-    return NextResponse.json(await AuditLog.find().sort({ createdAt: -1 }).limit(100).lean());
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to load audit logs";
-    return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 401 });
-  }
-}
+import { AuditLog } from "@/models/AuditLog";
+function csv(value: unknown) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
+export async function GET(request: NextRequest) { try { await requirePermission(request, "reports:read"); const actorUid = request.nextUrl.searchParams.get("actorUid"); const action = request.nextUrl.searchParams.get("action"); const entityType = request.nextUrl.searchParams.get("entityType"); const filter: Record<string, unknown> = {}; if (actorUid) filter.actorUid = actorUid; if (action) filter.action = { $regex: action, $options: "i" }; if (entityType) filter.entityType = entityType; const records = await AuditLog.find(filter).sort({ createdAt: -1 }).limit(500).lean(); if (request.nextUrl.searchParams.get("format") === "csv") { const rows = ["Timestamp,Actor,Action,Module,Record ID,IP address,Before,After", ...records.map((record) => [record.createdAt?.toISOString(), record.actorUid, record.action, record.entityType, record.entityId, record.ipAddress, JSON.stringify(record.before ?? {}), JSON.stringify(record.after ?? {})].map(csv).join(","))]; return new NextResponse(rows.join("\n"), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": "attachment; filename=audit-log.csv" } }); } return NextResponse.json(records); } catch (error) { const message = error instanceof Error ? error.message : "Unable to load audit logs"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 401 }); } }

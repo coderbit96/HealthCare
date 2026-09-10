@@ -210,7 +210,7 @@ const moduleResources: Record<string, ModuleResource> = {
   Payments: { endpoint: "/api/payments", description: "Payment transaction history." },
   Insurance: { endpoint: "/api/insurance/providers", description: "Insurance providers and policies." },
   Inventory: { endpoint: "/api/inventory/items", description: "Hospital inventory and reorder levels." },
-  Reports: { endpoint: "/api/analytics/overview?range=30d", description: "Operational reporting for the last 30 days." },
+  Reports: { endpoint: "/api/reports?type=patients", description: "Detailed operational report records. Use the report API with type=patients, appointments, admissions, invoices, payments or attendance; add format=csv to download." },
   Analytics: { endpoint: "/api/analytics/overview?range=7d", description: "Seven-day hospital performance summary." },
   Notifications: { endpoint: "/api/notifications", description: "Notifications for the current administrator." },
   "Website CMS": { endpoint: "/api/cms/content", description: "Published and draft website content." },

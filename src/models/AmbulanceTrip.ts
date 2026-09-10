@@ -1,3 +1,6 @@
 import { Schema, model, models } from "mongoose";
-const AmbulanceTripSchema = new Schema({ ambulance: { type: Schema.Types.ObjectId, ref: "Ambulance", required: true, index: true }, patient: { type: Schema.Types.ObjectId, ref: "Patient" }, pickup: String, destination: String, status: { type: String, enum: ["on_trip", "completed", "cancelled"], default: "on_trip" }, startedAt: Date, endedAt: Date, recordedBy: String }, { timestamps: true });
-export const AmbulanceTrip = models.AmbulanceTrip || model("AmbulanceTrip", AmbulanceTripSchema);
+const AmbulanceTripSchema = new Schema({ ambulance: { type: Schema.Types.ObjectId, ref: "Ambulance", required: true, index: true }, patient: { type: Schema.Types.ObjectId, ref: "Patient" }, pickup: String, destination: String, status: { type: String, enum: ["requested", "assigned", "pickup", "on_trip", "hospital_arrival", "completed", "cancelled"], default: "requested", index: true }, requestedAt: { type: Date, default: Date.now }, assignedAt: Date, pickupAt: Date, startedAt: Date, arrivedAt: Date, endedAt: Date, recordedBy: String }, { timestamps: true });
+AmbulanceTripSchema.index({ ambulance: 1, status: 1 });
+const existingTrip = models.AmbulanceTrip;
+if (existingTrip) { const status = existingTrip.schema.path("status") as { enumValues?: string[] }; if (status.enumValues) for (const value of ["requested", "assigned", "pickup", "hospital_arrival"]) if (!status.enumValues.includes(value)) status.enumValues.push(value); for (const field of ["requestedAt", "assignedAt", "pickupAt", "arrivedAt"]) if (!existingTrip.schema.path(field)) existingTrip.schema.add({ [field]: Date }); }
+export const AmbulanceTrip = existingTrip || model("AmbulanceTrip", AmbulanceTripSchema);

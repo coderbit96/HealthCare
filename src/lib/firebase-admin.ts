@@ -30,6 +30,12 @@ export async function createFirebaseUser({ email, password, displayName }: { ema
 export async function deleteFirebaseUser(uid: string) {
   return getAuth(adminApp()).deleteUser(uid);
 }
+export async function revokeFirebaseSessions(uid: string) {
+  return getAuth(adminApp()).revokeRefreshTokens(uid);
+}
+export async function setFirebaseUserDisabled(uid: string, disabled: boolean) {
+  return getAuth(adminApp()).updateUser(uid, { disabled });
+}
 
 export async function createSessionCookie(idToken: string) { return getAuth(adminApp()).createSessionCookie(idToken, { expiresIn: 1000 * 60 * 60 * 24 * 5 }); }
 export async function verifySessionCookie(cookie: string) { return getAuth(adminApp()).verifySessionCookie(cookie, true); }

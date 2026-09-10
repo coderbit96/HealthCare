@@ -5,7 +5,7 @@ import { requirePermission } from "@/lib/server-auth";
 import { HospitalSetting } from "@/models/HospitalSetting";
 
 const settingSchema = z.object({
-  key: z.string().trim().min(2).max(120),
+  key: z.string().trim().regex(/^(hospital|system)\.[a-z0-9_.-]{1,100}$/i, "Use a hospital.* or system.* setting key"),
   value: z.unknown(),
 });
 

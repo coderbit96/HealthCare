@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { audit } from "@/lib/audit";
+import { revokeFirebaseSessions, setFirebaseUserDisabled } from "@/lib/firebase-admin";
 import { requirePermission } from "@/lib/server-auth";
 import { User } from "@/models/User";
-import { audit } from "@/lib/audit";
-const schema = z.object({ active: z.boolean() });
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try { const actor = await requirePermission(request, "users:write"); const { active } = schema.parse(await request.json()); const { id } = await params; const user = await User.findByIdAndUpdate(id, { active, status: active ? "active" : "inactive" }, { new: true }).select("name email role active").lean(); if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 }); if (user._id.toString() === actor.id && !active) return NextResponse.json({ error: "You cannot deactivate your own account" }, { status: 400 }); await audit(actor.firebaseUid, active ? "user.activated" : "user.deactivated", "User", id, { active }); return NextResponse.json(user); }
-  catch (error) { const message = error instanceof Error ? error.message : "Unable to update user"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 400 }); }
-}
+const schema = z.object({ status: z.enum(["active", "inactive", "suspended"]), revokeSessions: z.boolean().default(false) });
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) { try { const actor = await requirePermission(request, "users:write"); const input = schema.parse(await request.json()); const { id } = await params; const target = await User.findById(id); if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 }); if (target._id.toString() === actor.id && input.status !== "active") return NextResponse.json({ error: "You cannot suspend or disable your own account" }, { status: 400 }); const previousStatus = target.status; const active = input.status === "active"; await setFirebaseUserDisabled(target.firebaseUid, !active); if (input.revokeSessions || !active) await revokeFirebaseSessions(target.firebaseUid); target.active = active; target.status = input.status; await target.save(); await audit(actor.firebaseUid, `user.${input.status}`, "User", id, { revokeSessions: input.revokeSessions || !active, previousStatus }); return NextResponse.json({ _id: target._id, name: target.name, email: target.email, role: target.role, active: target.active, status: target.status }); } catch (error) { const message = error instanceof z.ZodError ? "Invalid user status" : error instanceof Error ? error.message : "Unable to update user"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 400 }); } }

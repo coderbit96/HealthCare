@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { audit } from "@/lib/audit";
 import { requirePermission } from "@/lib/server-auth";
 import { InventoryItem } from "@/models/InventoryItem";
 export async function GET(request: NextRequest) { try { await requirePermission(request, "inventory:read"); const lowStock = request.nextUrl.searchParams.get("lowStock") === "true"; const items = await InventoryItem.find().sort({ name: 1 }).lean(); return NextResponse.json(lowStock ? items.filter(item => item.quantity <= item.reorderLevel) : items); } catch (error) { const message = error instanceof Error ? error.message : "Unable to load inventory"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 401 }); } }
+const schema = z.object({ name: z.string().trim().min(2).max(160), category: z.enum(["medical_equipment", "surgical_supply", "disposable", "lab_supply", "office_supply"]), unit: z.string().trim().max(40).optional(), reorderLevel: z.number().int().min(0).default(0), supplier: z.string().trim().max(160).optional() });
+export async function POST(request: NextRequest) { try { const user = await requirePermission(request, "inventory:write"); const item = await InventoryItem.create(schema.parse(await request.json())); await audit(user.firebaseUid, "inventory.item_created", "InventoryItem", item._id.toString()); return NextResponse.json(item, { status: 201 }); } catch (error) { const message = error instanceof z.ZodError ? "Invalid inventory item" : error instanceof Error ? error.message : "Unable to create inventory item"; return NextResponse.json({ error: message }, { status: message === "Forbidden" ? 403 : 400 }); } }
