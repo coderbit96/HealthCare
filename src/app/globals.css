@@ -43,6 +43,23 @@ h1, h2, h3, .font-display {
 * { box-sizing: border-box; }
 button, input, select, textarea { font: inherit; }
 
+.profile-input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: .5rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  padding: .625rem .75rem;
+  font-weight: 400;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.profile-input:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px rgb(15 92 86 / .15);
+}
+
 :focus-visible {
   outline: 2px solid var(--color-brand-bright);
   outline-offset: 2px;
@@ -56,4 +73,27 @@ button, input, select, textarea { font: inherit; }
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+.portal-dark {
+  --color-canvas: #101917;
+  --color-surface: #172321;
+  --color-surface-sunken: #22312e;
+  --color-ink: #f4f7f6;
+  --color-ink-muted: #c2ceca;
+  --color-ink-subtle: #91a39d;
+  --color-line: #30443f;
+  --color-brand-soft: #1c3b35;
+  --color-accent-soft: #442b28;
+  color-scheme: dark;
+}
+
+.portal-dark .bg-white,
+.portal-dark .bg-white\/95 {
+  background-color: #172321;
+}
+
+.portal-dark .bg-white\/10,
+.portal-dark .bg-white\/15 {
+  background-color: rgb(255 255 255 / 0.1);
 }

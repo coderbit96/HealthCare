@@ -27,8 +27,16 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
 
   const createSession = async (user: User) => {
     const response = await fetch("/api/auth/session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ idToken: await user.getIdToken(true) }) });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error);
+    const rawPayload = await response.text();
+    let payload: { error?: string; role?: string; name?: string } = {};
+    try {
+      payload = rawPayload ? JSON.parse(rawPayload) as { error?: string; role?: string; name?: string } : {};
+    } catch {
+      // An upstream platform error may return an empty or non-JSON response.
+    }
+    if (!response.ok) {
+      throw new Error(payload.error ?? (response.status >= 500 ? "The secure sign-in service is temporarily unavailable. Please try again shortly." : "Unable to create a secure sign-in session."));
+    }
     if (adminOnly && payload.role !== "admin") {
       await fetch("/api/auth/session", { method: "DELETE" });
       throw new Error("This sign-in page is restricted to hospital administrators.");
