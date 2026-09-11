@@ -47,35 +47,27 @@ export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
   const requestedAction = sectionAction[section];
   const showQueue = section === "Dashboard" || section.startsWith("Today") || ["Appointments", "Patient Queue", "Patient Records", "OPD", "IPD", "Admissions", "Discharge", "Follow-ups", "Notifications"].includes(section);
   const showActions = section === "Dashboard" || Boolean(requestedAction);
+  const selectedAction = requestedAction && can(ACTIONS.find((action) => action.key === requestedAction)?.permission ?? "clinical:read") ? requestedAction : active;
 
   useEffect(() => {
     fetch("/api/portal/summary").then(r => r.ok ? r.json() : null).then(value => value && setSummary(value)).catch(() => undefined);
     fetch(`/api/appointments${doctor ? `?doctorUid=${user.firebaseUid}` : ""}`).then(r => r.ok ? r.json() : null).then(value => Array.isArray(value) && setQueue(value)).catch(() => undefined);
   }, [doctor, user.firebaseUid]);
 
-  useEffect(() => {
-    if (!requestedAction || !can(ACTIONS.find((action) => action.key === requestedAction)?.permission ?? "clinical:read")) return;
-    setActive(requestedAction);
-    setFields({});
-    setMessage(undefined);
-    setError(undefined);
-    setPatientError(undefined);
-  }, [requestedAction]);
-
-  const openAction = (key: ActionKey) => { setActive(active === key ? undefined : key); setFields({}); setMessage(undefined); setError(undefined); setPatientError(undefined); };
+  const openAction = (key: ActionKey) => { setActive(selectedAction === key ? undefined : key); setFields({}); setMessage(undefined); setError(undefined); setPatientError(undefined); };
 
   const submit = async () => {
-    if (!active) return;
+    if (!selectedAction) return;
     setError(undefined); setMessage(undefined);
     if (!/^[a-f\d]{24}$/i.test(patientId.trim())) { setPatientError("Enter a valid 24-character patient id"); return; }
     setPatientError(undefined);
     setSaving(true);
     try {
       let response: Response;
-      if (active === "vitals") response = await post("/api/clinical/vitals", { patient: patientId, temperature: num(fields.temperature), systolic: num(fields.systolic), diastolic: num(fields.diastolic), pulse: num(fields.pulse), spo2: num(fields.spo2), observation: fields.observation });
-      else if (active === "nursing") response = await post("/api/nursing/entries", { patient: patientId, type: "handover", content: { note: fields.note ?? "" } });
-      else if (active === "clinical") response = await post("/api/clinical/records", { patient: patientId, diagnosis: fields.diagnosis ?? "", symptoms: list(fields.symptoms), treatmentPlan: fields.treatmentPlan, notes: fields.notes });
-      else if (active === "prescription") response = await post("/api/prescriptions", { patient: patientId, diagnosis: fields.diagnosis, medicines: [{ name: fields.medicine ?? "", dosage: fields.dosage ?? "", frequency: fields.frequency ?? "", duration: fields.duration ?? "" }] });
+      if (selectedAction === "vitals") response = await post("/api/clinical/vitals", { patient: patientId, temperature: num(fields.temperature), systolic: num(fields.systolic), diastolic: num(fields.diastolic), pulse: num(fields.pulse), spo2: num(fields.spo2), observation: fields.observation });
+      else if (selectedAction === "nursing") response = await post("/api/nursing/entries", { patient: patientId, type: "handover", content: { note: fields.note ?? "" } });
+      else if (selectedAction === "clinical") response = await post("/api/clinical/records", { patient: patientId, diagnosis: fields.diagnosis ?? "", symptoms: list(fields.symptoms), treatmentPlan: fields.treatmentPlan, notes: fields.notes });
+      else if (selectedAction === "prescription") response = await post("/api/prescriptions", { patient: patientId, diagnosis: fields.diagnosis, medicines: [{ name: fields.medicine ?? "", dosage: fields.dosage ?? "", frequency: fields.frequency ?? "", duration: fields.duration ?? "" }] });
       else response = await post("/api/lab/orders", { patient: patientId, tests: [{ name: fields.test ?? "", category: fields.category || "general" }] });
       const body = await response.json();
       if (!response.ok) { setError(body.error ?? "Unable to save"); return; }
@@ -114,13 +106,13 @@ export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
           <h2 className="mt-4 font-display text-xl font-semibold">Clinical actions</h2>
           <div className="mt-5 grid gap-2">
             {ACTIONS.filter(action => can(action.permission)).map(action => (
-              <button key={action.key} onClick={() => openAction(action.key)} aria-expanded={active === action.key} className={cn("rounded-xl px-4 py-3 text-left text-sm font-semibold transition", active === action.key ? "bg-accent text-white" : "bg-white/10 hover:bg-white/20")}>{action.label}</button>
+              <button key={action.key} onClick={() => openAction(action.key)} aria-expanded={selectedAction === action.key} className={cn("rounded-xl px-4 py-3 text-left text-sm font-semibold transition", selectedAction === action.key ? "bg-accent text-white" : "bg-white/10 hover:bg-white/20")}>{action.label}</button>
             ))}
           </div>
-          {active && (
+          {selectedAction && (
             <div className="mt-5 grid gap-3 rounded-xl bg-white/10 p-4 [&_label]:text-white [&_input]:border-white/20 [&_input]:bg-white/10 [&_input]:text-white [&_input]:placeholder:text-white/50">
               <Field label="Patient id" placeholder="24-character id" value={patientId} error={patientError} onChange={e => setPatientId(e.target.value)} />
-              <ActionFields action={active} fields={fields} setFields={setFields} />
+              <ActionFields action={selectedAction} fields={fields} setFields={setFields} />
               <Button variant="accent" onClick={submit} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
               {message && <p role="status" className="text-sm font-medium">{message}</p>}
               {error && <p role="alert" className="rounded-lg bg-accent px-3 py-2 text-sm font-medium">{error}</p>}

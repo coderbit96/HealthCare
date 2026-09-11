@@ -5,6 +5,15 @@ import { readFileSync } from "node:fs";
 function adminApp() {
   if (getApps().length) return getApps()[0]!;
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  if (!raw && projectId && clientEmail && privateKey) {
+    return initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+  }
+  if (!raw && (projectId || clientEmail || privateKey)) {
+    throw new Error("Firebase Admin credentials are incomplete");
+  }
   if (!raw && process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
     try {
       raw = readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, "utf8");
