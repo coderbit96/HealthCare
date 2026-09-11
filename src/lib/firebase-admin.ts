@@ -2,13 +2,28 @@ import { cert, getApps, initializeApp, type ServiceAccount } from "firebase-admi
 import { getAuth } from "firebase-admin/auth";
 import { readFileSync } from "node:fs";
 
+function normaliseEnvironmentValue(value: string | undefined) {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/^(?:"|')|(?:"|')$/g, "");
+}
+
+function normalisePrivateKey(value: string | undefined) {
+  return normaliseEnvironmentValue(value)
+    ?.replace(/^\\(?=-----BEGIN PRIVATE KEY-----)/, "")
+    .replace(/\\n/g, "\n");
+}
+
 function adminApp() {
   if (getApps().length) return getApps()[0]!;
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const projectId = normaliseEnvironmentValue(process.env.FIREBASE_ADMIN_PROJECT_ID);
+  const clientEmail = normaliseEnvironmentValue(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
+  const privateKey = normalisePrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
   if (!raw && projectId && clientEmail && privateKey) {
+    if (!privateKey.startsWith("-----BEGIN PRIVATE KEY-----")) {
+      throw new Error("Firebase Admin private key format is invalid");
+    }
     return initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
   }
   if (!raw && (projectId || clientEmail || privateKey)) {

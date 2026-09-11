@@ -12,7 +12,10 @@ function sessionErrorResponse(error: unknown) {
   const responseMessage = serviceUnavailable
     ? "The secure sign-in service is temporarily unavailable. Please try again shortly."
     : "Unable to create a secure sign-in session.";
-  return NextResponse.json({ error: responseMessage }, { status: serviceUnavailable ? 503 : 401 });
+  return NextResponse.json(
+    { error: responseMessage, code: serviceUnavailable ? "authentication_service_unavailable" : "session_creation_failed" },
+    { status: serviceUnavailable ? 503 : 401 },
+  );
 }
 
 export async function POST(request: NextRequest) {
