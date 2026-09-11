@@ -1,6 +1,26 @@
 import { redirect } from "next/navigation";
-import { Bell, CalendarDays, CreditCard, FileHeart, ReceiptText, Stethoscope, UserRound } from "lucide-react";
+import { PatientPortalWorkspace } from "@/components/patient/patient-portal-workspace";
 import { getServerSessionUser } from "@/lib/server-auth";
+
 export const metadata = { title: "My health | Health Care .Pvt .Ltd" };
-const features = ["Dashboard", "Profile", "UHID", "Find Doctor", "Doctor Profile", "Book Appointment", "Available Slots", "Reschedule", "Cancel", "Appointment History", "Prescriptions", "Medical Records", "Lab Reports", "Admission History", "Discharge Summaries", "Bills", "Online Payments", "Payment History", "Download Invoice", "Notifications", "Health Packages"];
-export default async function PatientPortal() { const user = await getServerSessionUser(); if (!user) redirect("/login"); if (user.role !== "patient") redirect("/portal/dashboard"); return <main className="min-h-screen bg-canvas text-ink"><header className="border-b bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5"><div><p className="text-xs font-semibold uppercase tracking-wider text-brand">Health Care .Pvt .Ltd</p><h1 className="font-display text-2xl font-semibold">My health</h1></div><div className="rounded-full bg-brand-soft px-3 py-2 text-sm font-semibold text-brand-strong">{user.name}</div></div></header><div className="mx-auto grid max-w-6xl gap-6 px-5 py-8 lg:grid-cols-[230px_1fr]"><aside className="rounded-2xl bg-white p-3 shadow-sm"><nav className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-1">{features.map((feature, index) => <button key={feature} className={`rounded-lg px-3 py-2 text-left text-sm font-semibold ${index === 0 ? "bg-brand-soft text-brand-strong" : "text-ink-muted hover:bg-canvas"}`}>{feature}</button>)}</nav></aside><section><div className="rounded-3xl bg-brand-strong p-7 text-white"><p className="text-sm font-semibold text-brand-bright">Your private patient portal</p><h2 className="mt-2 font-display text-3xl font-semibold">Hello, {user.name.split(" ")[0]}</h2><p className="mt-3 max-w-xl text-sm leading-6 text-white/70">Your appointments, medical records, prescriptions, bills and documents are available here. This portal loads only records linked to your verified account.</p></div><div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{[[CalendarDays, "Appointments", "Book, view slots, reschedule or cancel"], [FileHeart, "Clinical records", "Prescriptions, lab reports and discharge summaries"], [CreditCard, "Bills & payments", "Pay online, view history and download invoices"], [Stethoscope, "Find a doctor", "Browse specialists and request a visit"], [UserRound, "My profile", "UHID and personal details"], [Bell, "Notifications", "Appointment and care updates"]].map(([Icon, title, description]) => { const CardIcon = Icon as typeof CalendarDays; return <article className="rounded-2xl bg-white p-5 shadow-sm" key={title as string}><CardIcon className="text-brand" /><h2 className="mt-5 font-semibold">{title as string}</h2><p className="mt-2 text-sm leading-6 text-ink-muted">{description as string}</p></article>; })}</div><div className="mt-6 flex items-center gap-3 rounded-2xl bg-brand-soft p-5 text-sm text-brand-strong"><ReceiptText className="shrink-0" /><p>Portal information is supplied by the server at <code>/api/patient-portal/overview</code>; it derives your linked patient profile from the authenticated session and never accepts a patient ID from the browser.</p></div></section></div></main>; }
+
+export default async function PatientPortal() {
+  const user = await getServerSessionUser();
+  if (!user) redirect("/login");
+  if (user.role !== "patient") redirect("/portal/dashboard");
+
+  return (
+    <main className="min-h-screen bg-canvas text-ink">
+      <header className="border-b bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-brand">Health Care .Pvt .Ltd</p>
+            <h1 className="font-display text-2xl font-semibold">My health</h1>
+          </div>
+          <div className="rounded-full bg-brand-soft px-3 py-2 text-sm font-semibold text-brand-strong">{user.name}</div>
+        </div>
+      </header>
+      <PatientPortalWorkspace name={user.name} />
+    </main>
+  );
+}

@@ -1,6 +1,7 @@
 "use client";
 import { Activity, CalendarDays, HeartPulse, Hospital, Stethoscope, UsersRound } from "lucide-react";
 import { type ChangeEvent, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { AuthenticatedUser } from "@/lib/server-auth";
 import { hasPermission, type Permission } from "@/lib/roles";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -22,6 +23,8 @@ const ACTIONS: { key: ActionKey; label: string; permission: Permission }[] = [
 ];
 
 export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
+  const searchParams = useSearchParams();
+  const section = searchParams.get("section") ?? "Dashboard";
   const doctor = user.role === "doctor";
   const can = (permission: Permission) => hasPermission(user.role, permission, user.permissions);
   const [summary, setSummary] = useState<Summary>();
@@ -33,11 +36,31 @@ export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
   const [message, setMessage] = useState<string>();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
+  const sectionAction: Partial<Record<string, ActionKey>> = {
+    Vitals: "vitals",
+    "Clinical Notes": "clinical",
+    Prescriptions: "prescription",
+    "Lab Requests": "lab",
+    Medication: "nursing",
+    "Nursing Notes": "nursing",
+  };
+  const requestedAction = sectionAction[section];
+  const showQueue = section === "Dashboard" || section.startsWith("Today") || ["Appointments", "Patient Queue", "Patient Records", "OPD", "IPD", "Admissions", "Discharge", "Follow-ups", "Notifications"].includes(section);
+  const showActions = section === "Dashboard" || Boolean(requestedAction);
 
   useEffect(() => {
     fetch("/api/portal/summary").then(r => r.ok ? r.json() : null).then(value => value && setSummary(value)).catch(() => undefined);
     fetch(`/api/appointments${doctor ? `?doctorUid=${user.firebaseUid}` : ""}`).then(r => r.ok ? r.json() : null).then(value => Array.isArray(value) && setQueue(value)).catch(() => undefined);
   }, [doctor, user.firebaseUid]);
+
+  useEffect(() => {
+    if (!requestedAction || !can(ACTIONS.find((action) => action.key === requestedAction)?.permission ?? "clinical:read")) return;
+    setActive(requestedAction);
+    setFields({});
+    setMessage(undefined);
+    setError(undefined);
+    setPatientError(undefined);
+  }, [requestedAction]);
 
   const openAction = (key: ActionKey) => { setActive(active === key ? undefined : key); setFields({}); setMessage(undefined); setError(undefined); setPatientError(undefined); };
 
@@ -64,14 +87,14 @@ export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
 
   return (
     <DashboardShell user={user} workspace={`${doctor ? "Doctor" : "Nurse"} workspace`} icon={HeartPulse} navigation={navigation} title="Today’s clinical care">
-      <section className="grid gap-4 sm:grid-cols-3">
+      {section === "Dashboard" && <section className="grid gap-4 sm:grid-cols-3">
         <StatCard icon={UsersRound} label="Registered patients" value={summary?.patients ?? "—"} />
         <StatCard icon={CalendarDays} label={doctor ? "My appointments" : "Appointments"} value={queue?.length ?? "—"} />
         <StatCard icon={Hospital} label="Awaiting confirmation" value={summary?.pendingAppointments ?? "—"} tone="accent" />
-      </section>
+      </section>}
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
-        <Card>
+      {(showQueue || showActions) && <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
+        {showQueue && <Card>
           <div className="flex items-start justify-between gap-4">
             <div><h2 className="font-display text-lg font-semibold">Patient queue</h2><p className="mt-0.5 text-sm text-ink-muted">{doctor ? "Your scheduled appointments" : "Today’s appointments"}</p></div>
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><Activity size={19} /></span>
@@ -84,9 +107,9 @@ export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
               </div>
             ))}
           </div>
-        </Card>
+        </Card>}
 
-        <div className="rounded-panel bg-brand p-6 text-white">
+        {showActions && <div className="rounded-panel bg-brand p-6 text-white">
           <span className="grid size-10 place-items-center rounded-xl bg-white/15"><Stethoscope size={19} /></span>
           <h2 className="mt-4 font-display text-xl font-semibold">Clinical actions</h2>
           <div className="mt-5 grid gap-2">
@@ -104,8 +127,8 @@ export function ClinicalDashboard({ user }: { user: AuthenticatedUser }) {
             </div>
           )}
           {!doctor && <p className="mt-5 text-xs leading-6 text-white/60">Nursing actions cover bedside care, observations, medication administration and handover. Diagnoses, prescriptions and discharge remain doctor-only.</p>}
-        </div>
-      </section>
+        </div>}
+      </section>}
     </DashboardShell>
   );
 }

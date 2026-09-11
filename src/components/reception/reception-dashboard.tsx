@@ -1,6 +1,7 @@
 "use client";
 import { CalendarDays, CreditCard, ReceiptText, Search, UserPlus, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { AuthenticatedUser } from "@/lib/server-auth";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Badge, Button, Card, EmptyState, Field, StatCard } from "@/components/ui";
@@ -12,6 +13,8 @@ type Invoice = { _id: string; invoiceNumber: string; category: string; total: nu
 type Analytics = { appointments: number; revenue: number; outstanding: number; admissions: number };
 
 export function ReceptionDashboard({ user }: { user: AuthenticatedUser }) {
+  const searchParams = useSearchParams();
+  const section = searchParams.get("section") ?? "Dashboard";
   const [analytics, setAnalytics] = useState<Analytics>();
   const [query, setQuery] = useState("");
   const [patients, setPatients] = useState<Patient[]>();
@@ -23,6 +26,9 @@ export function ReceptionDashboard({ user }: { user: AuthenticatedUser }) {
   const [registerMessage, setRegisterMessage] = useState<string>();
   const [registerError, setRegisterError] = useState<string>();
   const [saving, setSaving] = useState(false);
+  const showPatientSearch = ["Dashboard", "Patients", "Walk-In", "Queue", "Admissions"].includes(section);
+  const showRegistration = ["Dashboard", "New Registration"].includes(section);
+  const showBilling = ["Dashboard", "Billing", "Invoices", "Payments", "Outstanding", "Refunds", "Insurance", "Reports"].includes(section);
 
   useEffect(() => {
     fetch("/api/analytics/overview?range=today").then(r => r.ok ? r.json() : null).then(value => value && setAnalytics(value)).catch(() => undefined);
@@ -55,14 +61,14 @@ export function ReceptionDashboard({ user }: { user: AuthenticatedUser }) {
 
   return (
     <DashboardShell user={user} workspace="Reception operations" icon={UsersRound} navigation={navigation} title={`Welcome, ${user.name.split(" ")[0]}`}>
-      <section className="grid gap-4 sm:grid-cols-3">
+      {section === "Dashboard" && <section className="grid gap-4 sm:grid-cols-3">
         <StatCard icon={CalendarDays} label="Today’s bookings" value={analytics?.appointments ?? "—"} />
         <StatCard icon={UsersRound} label="Admissions today" value={analytics?.admissions ?? "—"} />
         <StatCard icon={CreditCard} label="Collections" value={analytics ? `₹${analytics.revenue.toLocaleString("en-IN")}` : "—"} tone="accent" />
-      </section>
+      </section>}
 
-      <section className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card>
+      {(showPatientSearch || showRegistration) && <section className="mt-6 grid gap-6 lg:grid-cols-2">
+        {showPatientSearch && <Card>
           <div className="flex items-center gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><Search size={19} /></span>
             <div><h2 className="font-display text-lg font-semibold">Find a patient</h2><p className="text-sm text-ink-muted">Search by UHID, name, or phone.</p></div>
@@ -78,13 +84,13 @@ export function ReceptionDashboard({ user }: { user: AuthenticatedUser }) {
               </div>
             ))}
           </div>}
-        </Card>
+        </Card>}
 
-        <div className="rounded-panel bg-brand p-6 text-white">
+        {showRegistration && <div className="rounded-panel bg-brand p-6 text-white">
           <span className="grid size-10 place-items-center rounded-xl bg-white/15"><UserPlus size={19} /></span>
           <h2 className="mt-4 font-display text-xl font-semibold">New patient registration</h2>
           <p className="mt-2 leading-7 text-white/75">Creates a collision-safe UHID in the format HSP-YYYY-000001.</p>
-          {!showRegister ? <Button variant="accent" className="mt-5" onClick={() => setShowRegister(true)}>Register patient</Button> : (
+          {!showRegister && section !== "New Registration" ? <Button variant="accent" className="mt-5" onClick={() => setShowRegister(true)}>Register patient</Button> : (
             <div className="mt-5 grid gap-3 [&_label]:text-white [&_input]:border-white/20 [&_input]:bg-white/10 [&_input]:text-white [&_input]:placeholder:text-white/50">
               <Field label="Full name" placeholder="Patient name" value={registerForm.name} error={registerErrors.name} onChange={e => setRegisterForm({ ...registerForm, name: e.target.value })} />
               <Field label="Phone" placeholder="+91 …" value={registerForm.phone} error={registerErrors.phone} onChange={e => setRegisterForm({ ...registerForm, phone: e.target.value })} />
@@ -94,10 +100,10 @@ export function ReceptionDashboard({ user }: { user: AuthenticatedUser }) {
               {registerError && <p role="alert" className="rounded-xl bg-accent px-3 py-2 text-sm font-medium">{registerError}</p>}
             </div>
           )}
-        </div>
-      </section>
+        </div>}
+      </section>}
 
-      <Card className="mt-6">
+      {showBilling && <Card className="mt-6">
         <div className="flex items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><ReceiptText size={19} /></span>
           <div><h2 className="font-display text-lg font-semibold">Billing &amp; collections</h2><p className="text-sm text-ink-muted">Invoices reconcile from transaction records; totals are never overwritten.</p></div>
@@ -113,7 +119,7 @@ export function ReceptionDashboard({ user }: { user: AuthenticatedUser }) {
             </div>
           ))}
         </div>
-      </Card>
+      </Card>}
     </DashboardShell>
   );
 }

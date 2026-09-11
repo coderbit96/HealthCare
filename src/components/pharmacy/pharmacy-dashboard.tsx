@@ -1,6 +1,7 @@
 "use client";
 import { AlertTriangle, Package, Pill, ReceiptText, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { AuthenticatedUser } from "@/lib/server-auth";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Badge, Button, Card, EmptyState, Field, StatCard } from "@/components/ui";
@@ -12,6 +13,8 @@ type Prescription = { _id: string; status: string; patient?: { name: string; uhi
 type Dispense = { _id: string; quantity: number; createdAt: string; patient?: { name: string } | string };
 
 export function PharmacyDashboard({ user }: { user: AuthenticatedUser }) {
+  const searchParams = useSearchParams();
+  const section = searchParams.get("section") ?? "Dashboard";
   const [medicines, setMedicines] = useState<Medicine[]>();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>();
   const [history, setHistory] = useState<Dispense[]>();
@@ -30,6 +33,9 @@ export function PharmacyDashboard({ user }: { user: AuthenticatedUser }) {
 
   const todaysDispenses = history?.filter(d => new Date(d.createdAt).toDateString() === new Date().toDateString()).length;
   const lowStockCount = medicines?.filter(m => m.lowStock).length;
+  const showDispensing = ["Dashboard", "Prescriptions", "Dispensing"].includes(section);
+  const showStock = ["Dashboard", "Medicines", "Categories", "Brands", "Batches", "Inventory", "Purchases", "Suppliers", "Returns", "Alerts"].includes(section);
+  const showHistory = ["Dashboard", "Sales", "Billing", "Reports"].includes(section);
 
   const dispense = async () => {
     setError(undefined); setMessage(undefined);
@@ -53,13 +59,13 @@ export function PharmacyDashboard({ user }: { user: AuthenticatedUser }) {
 
   return (
     <DashboardShell user={user} workspace="Pharmacy" icon={Pill} navigation={navigation} title={`Welcome, ${user.name.split(" ")[0]}`}>
-      <section className="grid gap-4 sm:grid-cols-3">
+      {section === "Dashboard" && <section className="grid gap-4 sm:grid-cols-3">
         <StatCard icon={Pill} label="Pending prescriptions" value={prescriptions?.length ?? "—"} />
         <StatCard icon={Package} label="Low stock alerts" value={lowStockCount ?? "—"} tone={lowStockCount ? "accent" : "brand"} />
         <StatCard icon={ShoppingCart} label="Dispensed today" value={todaysDispenses ?? "—"} />
-      </section>
+      </section>}
 
-      <div className="mt-6 rounded-panel bg-brand p-6 text-white">
+      {showDispensing && <div className="mt-6 rounded-panel bg-brand p-6 text-white">
         <h2 className="font-display text-xl font-semibold">Dispense medicine</h2>
         <p className="mt-2 leading-7 text-white/75">Stock is decremented atomically only when enough unexpired inventory exists, so negative stock cannot be created.</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-3 [&_label]:text-white [&_input]:border-white/20 [&_input]:bg-white/10 [&_input]:text-white [&_input]:placeholder:text-white/50">
@@ -71,11 +77,11 @@ export function PharmacyDashboard({ user }: { user: AuthenticatedUser }) {
         {message && <p role="status" className="mt-3 rounded-xl bg-white/15 px-3 py-2 text-sm font-medium">{message}</p>}
         {error && <p role="alert" className="mt-3 rounded-xl bg-accent px-3 py-2 text-sm font-medium">{error}</p>}
         <p className="mt-5 flex items-center gap-2 text-sm text-white/70"><AlertTriangle size={17} />Expiry and low-stock warnings are surfaced from batch data below.</p>
-      </div>
+      </div>}
 
-      <Card className="mt-6">
+      {showStock && <Card className="mt-6">
         <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand"><ReceiptText size={19} /></span>
-        <h2 className="mt-4 font-display text-lg font-semibold">Medicine stock</h2>
+        <h2 className="mt-4 font-display text-lg font-semibold">{section === "Dashboard" ? "Medicine stock" : section}</h2>
         <div className="mt-4 divide-y divide-line border-t border-line">
           {!medicines ? <EmptyState message="Loading medicines…" /> : medicines.length === 0 ? <EmptyState message="No medicines catalogued." /> : medicines.slice(0, 10).map(medicine => (
             <div key={medicine._id} className="flex items-center justify-between gap-4 py-3">
@@ -84,7 +90,8 @@ export function PharmacyDashboard({ user }: { user: AuthenticatedUser }) {
             </div>
           ))}
         </div>
-      </Card>
+      </Card>}
+      {showHistory && <Card className="mt-6"><span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand"><ReceiptText size={19} /></span><h2 className="mt-4 font-display text-lg font-semibold">{section === "Dashboard" ? "Recent dispensing" : section}</h2><div className="mt-4 divide-y divide-line border-t border-line">{!history ? <EmptyState message="Loading dispensing history" /> : history.length === 0 ? <EmptyState message="No dispensing transactions yet." /> : history.slice(0, 10).map(item => <div key={item._id} className="flex items-center justify-between gap-4 py-3"><span className="text-sm capitalize text-ink-muted">{typeof item.patient === "object" ? item.patient.name : "Patient"}</span><span className="font-semibold">{item.quantity} item{item.quantity === 1 ? "" : "s"}</span></div>)}</div></Card>}
     </DashboardShell>
   );
 }

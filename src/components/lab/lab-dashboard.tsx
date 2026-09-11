@@ -1,6 +1,7 @@
 "use client";
 import { Beaker, ClipboardList, FileCheck2, FlaskConical, Package } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { AuthenticatedUser } from "@/lib/server-auth";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button, Card, type Column, ConfirmDialog, DataTable, StatCard, StatusBadge, useToast } from "@/components/ui";
@@ -21,6 +22,8 @@ function nextStep(order: LabOrder): { action: string; label: string } | undefine
 const patientName = (order: LabOrder) => typeof order.patient === "object" ? order.patient?.name ?? "" : "";
 
 export function LabDashboard({ user }: { user: AuthenticatedUser }) {
+  const searchParams = useSearchParams();
+  const section = searchParams.get("section") ?? "Dashboard";
   const [orders, setOrders] = useState<LabOrder[]>();
   const [pendingOrder, setPendingOrder] = useState<LabOrder>();
   const [busy, setBusy] = useState(false);
@@ -56,22 +59,31 @@ export function LabDashboard({ user }: { user: AuthenticatedUser }) {
     { key: "reportStatus", header: "Status", sortValue: order => order.reportStatus, render: order => <StatusBadge status={order.reportStatus} /> },
     { key: "createdAt", header: "Raised", secondary: true, sortValue: order => new Date(order.createdAt).getTime(), render: order => <span className="text-ink-muted">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span> },
   ];
+  const visibleOrders = orders?.filter((order) => {
+    if (section === "Samples") return order.sampleStatus !== "received";
+    if (section === "Processing") return order.processingStatus === "processing";
+    if (section === "Results") return order.processingStatus === "completed" && order.reportStatus === "draft";
+    if (section === "Reports") return ["verified", "published"].includes(order.reportStatus);
+    return true;
+  });
+  const showOrders = ["Dashboard", "Test Orders", "Samples", "Processing", "Results", "Reports"].includes(section);
+  const showInventory = ["Dashboard", "Test Master", "Inventory"].includes(section);
 
   return (
     <DashboardShell user={user} workspace="Laboratory" icon={Beaker} navigation={navigation} title={`Welcome, ${user.name.split(" ")[0]}`}>
-      <section className="grid gap-4 sm:grid-cols-3">
+      {section === "Dashboard" && <section className="grid gap-4 sm:grid-cols-3">
         <StatCard icon={ClipboardList} label="Pending orders" value={orders?.filter(o => o.processingStatus === "requested").length ?? "—"} loading={!orders} />
         <StatCard icon={FlaskConical} label="Processing" value={orders?.filter(o => o.processingStatus === "processing").length ?? "—"} loading={!orders} />
         <StatCard icon={FileCheck2} label="Ready to publish" value={orders?.filter(o => o.reportStatus === "verified").length ?? "—"} tone="accent" loading={!orders} />
-      </section>
+      </section>}
 
-      <Card className="mt-6">
-        <h2 className="font-display text-lg font-semibold">Test orders</h2>
+      {showOrders && <Card className="mt-6">
+        <h2 className="font-display text-lg font-semibold">{section === "Dashboard" || section === "Test Orders" ? "Test orders" : section}</h2>
         <p className="mt-1 text-sm text-ink-muted">Request → sample collection → processing → result entry → verification → published report.</p>
         <div className="mt-5">
           <DataTable
             caption="Laboratory test orders"
-            rows={orders}
+            rows={visibleOrders}
             columns={columns}
             getRowId={order => order._id}
             searchPlaceholder="Search by order number or patient…"
@@ -86,13 +98,13 @@ export function LabDashboard({ user }: { user: AuthenticatedUser }) {
             }}
           />
         </div>
-      </Card>
+      </Card>}
 
-      <Card className="mt-6">
+      {showInventory && <Card className="mt-6">
         <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand"><Package size={19} /></span>
         <h2 className="mt-4 font-display text-lg font-semibold">Test master &amp; inventory</h2>
         <p className="mt-2 leading-7 text-ink-muted">Manage test categories, pricing, report history and laboratory inventory from this role-restricted workspace.</p>
-      </Card>
+      </Card>}
 
       <ConfirmDialog
         open={Boolean(pendingOrder)}

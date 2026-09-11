@@ -16,12 +16,6 @@ for (const line of readFileSync(".env.local", "utf8").split("\n")) {
   if (match && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^["']|["']$/g, "");
 }
 
-const password = process.env.DEMO_PASSWORD;
-if (!password || password.length < 6) {
-  console.error("DEMO_PASSWORD must be set in .env.local and contain at least 6 characters.");
-  process.exit(1);
-}
-
 const rawCredentials = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || (process.env.FIREBASE_SERVICE_ACCOUNT_PATH ? readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, "utf8") : undefined);
 if (!rawCredentials || !process.env.MONGODB_URI) {
   console.error("MongoDB and Firebase Admin credentials must be configured in .env.local.");
@@ -29,13 +23,13 @@ if (!rawCredentials || !process.env.MONGODB_URI) {
 }
 
 const demos = [
-  { role: "doctor", name: "Dr. Asha Mehta", email: process.env.DEMO_DOCTOR_EMAIL || "doctor@healthcare.demo" },
-  { role: "nurse", name: "Nurse Priya Das", email: process.env.DEMO_NURSE_EMAIL || "nurse@healthcare.demo" },
-  { role: "receptionist", name: "Reception Desk", email: process.env.DEMO_RECEPTIONIST_EMAIL || "reception@healthcare.demo" },
-  { role: "hr", name: "HR Manager", email: process.env.DEMO_HR_EMAIL || "hr@healthcare.demo" },
-  { role: "lab_technician", name: "Lab Technician", email: process.env.DEMO_LAB_TECHNICIAN_EMAIL || "lab@healthcare.demo" },
-  { role: "pharmacist", name: "Pharmacist", email: process.env.DEMO_PHARMACIST_EMAIL || "pharmacy@healthcare.demo" },
-  { role: "patient", name: "Demo Patient", email: process.env.DEMO_PATIENT_EMAIL || "patient@healthcare.demo" },
+  { role: "doctor", name: "Dr. Asha Mehta", email: process.env.DEMO_DOCTOR_EMAIL || "doctor@healthcare.demo", passwordKey: "DEMO_DOCTOR_PASSWORD" },
+  { role: "nurse", name: "Nurse Priya Das", email: process.env.DEMO_NURSE_EMAIL || "nurse@healthcare.demo", passwordKey: "DEMO_NURSE_PASSWORD" },
+  { role: "receptionist", name: "Reception Desk", email: process.env.DEMO_RECEPTIONIST_EMAIL || "reception@healthcare.demo", passwordKey: "DEMO_RECEPTIONIST_PASSWORD" },
+  { role: "hr", name: "HR Manager", email: process.env.DEMO_HR_EMAIL || "hr@healthcare.demo", passwordKey: "DEMO_HR_PASSWORD" },
+  { role: "lab_technician", name: "Lab Technician", email: process.env.DEMO_LAB_TECHNICIAN_EMAIL || "lab@healthcare.demo", passwordKey: "DEMO_LAB_TECHNICIAN_PASSWORD" },
+  { role: "pharmacist", name: "Pharmacist", email: process.env.DEMO_PHARMACIST_EMAIL || "pharmacy@healthcare.demo", passwordKey: "DEMO_PHARMACIST_PASSWORD" },
+  { role: "patient", name: "Demo Patient", email: process.env.DEMO_PATIENT_EMAIL || "patient@healthcare.demo", passwordKey: "DEMO_PATIENT_PASSWORD" },
 ];
 
 const app = getApps().length ? getApps()[0] : initializeApp({ credential: cert(JSON.parse(rawCredentials)) });
@@ -48,6 +42,8 @@ try {
   const now = new Date();
 
   for (const demo of demos) {
+    const password = process.env[demo.passwordKey] || process.env.DEMO_PASSWORD;
+    if (!password || password.length < 6) throw new Error(`${demo.passwordKey} must be set in .env.local and contain at least 6 characters.`);
     const email = demo.email.trim().toLowerCase();
     let firebaseUser;
     try {
@@ -74,7 +70,7 @@ try {
     console.log(`Ready: ${demo.role.padEnd(15)} ${email}`);
   }
 
-  console.log("\nAll demo accounts are ready. Their shared password is DEMO_PASSWORD from .env.local.");
+  console.log("\nAll demo accounts are ready with their role-specific passwords from .env.local.");
 } finally {
   await mongoose.disconnect();
 }
