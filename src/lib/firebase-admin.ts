@@ -4,7 +4,14 @@ import { readFileSync } from "node:fs";
 
 function adminApp() {
   if (getApps().length) return getApps()[0]!;
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || (process.env.FIREBASE_SERVICE_ACCOUNT_PATH ? readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, "utf8") : undefined);
+  let raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  if (!raw && process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+    try {
+      raw = readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, "utf8");
+    } catch {
+      throw new Error("Firebase Admin service-account file is unavailable");
+    }
+  }
   if (!raw) throw new Error("Firebase Admin is not configured");
   let serviceAccount: ServiceAccount;
   try {

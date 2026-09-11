@@ -9,6 +9,30 @@ import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
 const inputClass = "w-full rounded-xl border border-line bg-surface py-3.5 pl-11 pr-4 text-sm font-medium text-ink outline-none transition placeholder:font-normal placeholder:text-ink-subtle hover:border-brand-bright/50 focus:border-brand-bright focus:ring-4 focus:ring-brand-bright/10";
 
+type SessionFailure = Error & { kind: "session"; status: number };
+
+function isSessionFailure(error: unknown): error is SessionFailure {
+  return error instanceof Error && "kind" in error && (error as SessionFailure).kind === "session";
+}
+
+function loginFeedback(error: unknown, provider: "password" | "google") {
+  const fallback = provider === "google" ? "We could not complete this sign-in. Please try again." : "Please check your email and password, then try again.";
+
+  if (isSessionFailure(error)) {
+    if (error.status === 403) return { title: "Account access denied", message: error.message };
+    if (error.status === 429) return { title: "Too many attempts", message: error.message };
+    if (error.status >= 500) return { title: "Sign-in service unavailable", message: error.message };
+    return { title: "Unable to finish sign-in", message: error.message };
+  }
+
+  const code = typeof error === "object" && error && "code" in error ? String((error as { code?: string }).code) : "";
+  if (code === "auth/too-many-requests") return { title: "Too many attempts", message: "Please wait a moment before trying again." };
+  if (code === "auth/network-request-failed") return { title: "Connection problem", message: "Check your internet connection and try again." };
+  if (code === "auth/user-disabled") return { title: "Account unavailable", message: "This account has been disabled. Contact the hospital administrator." };
+  if (provider === "google" && code === "auth/popup-closed-by-user") return { title: "Sign-in cancelled", message: "The Google sign-in window was closed before completion." };
+  return { title: "Invalid login", message: fallback };
+}
+
 export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -35,7 +59,10 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
       // An upstream platform error may return an empty or non-JSON response.
     }
     if (!response.ok) {
-      throw new Error(payload.error ?? (response.status >= 500 ? "The secure sign-in service is temporarily unavailable. Please try again shortly." : "Unable to create a secure sign-in session."));
+      const failure = new Error(payload.error ?? (response.status >= 500 ? "The secure sign-in service is temporarily unavailable. Please try again shortly." : "Unable to create a secure sign-in session.")) as SessionFailure;
+      failure.kind = "session";
+      failure.status = response.status;
+      throw failure;
     }
     if (adminOnly && payload.role !== "admin") {
       await fetch("/api/auth/session", { method: "DELETE" });
@@ -52,7 +79,11 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
     setLoading(true);
     setError(undefined);
     try { await createSession((await signInWithEmailAndPassword(auth, email, password)).user); }
-    catch (cause) { const text = cause instanceof Error ? cause.message : "We could not sign you in."; setError(text); setFeedback({ tone: "error", title: "Invalid login", message: "Please check your email and password, then try again." }); }
+    catch (cause) {
+      const details = loginFeedback(cause, "password");
+      setError(isSessionFailure(cause) ? cause.message : details.message);
+      setFeedback({ tone: "error", ...details });
+    }
     finally { setLoading(false); }
   };
 
@@ -61,7 +92,11 @@ export function PortalLogin({ adminOnly = false }: { adminOnly?: boolean }) {
     setLoading(true);
     setError(undefined);
     try { await createSession((await signInWithPopup(auth, new GoogleAuthProvider())).user); }
-    catch (cause) { const text = cause instanceof Error ? cause.message : "We could not sign you in."; setError(text); setFeedback({ tone: "error", title: "Invalid login", message: "We could not complete this sign-in. Please try again." }); }
+    catch (cause) {
+      const details = loginFeedback(cause, "google");
+      setError(isSessionFailure(cause) ? cause.message : details.message);
+      setFeedback({ tone: "error", ...details });
+    }
     finally { setLoading(false); }
   };
 

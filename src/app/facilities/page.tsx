@@ -4,7 +4,7 @@ import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
 import { SITE_IMAGES } from "@/lib/site-content";
 
-export const metadata = { title: "Facilities | Health Care .Pvt .Ltd" };
+export const metadata = { title: "Hospital facilities", description: "Explore our modern hospital facilities, diagnostics, emergency support and patient-focused spaces." };
 
 const facilities = [
   { icon: Ambulance, title: "24/7 emergency care", text: "Rapid assessment and coordinated emergency response, day and night." },

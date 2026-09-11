@@ -4,7 +4,7 @@ import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
 import { SITE_IMAGES } from "@/lib/site-content";
 
-export const metadata = { title: "Gallery | Health Care .Pvt .Ltd" };
+export const metadata = { title: "Hospital gallery", description: "Take a look at Health Care Pvt. Ltd., our people, facilities and patient-first spaces." };
 
 const moments = [
   { src: SITE_IMAGES.hospital, alt: "Modern hospital exterior", label: "Our hospital" },

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
 
-export const metadata = { title: "Health Articles | Health Care .Pvt .Ltd" };
+export const metadata = { title: "Health blog", description: "Helpful, evidence-informed health articles from the Health Care Pvt. Ltd. clinical team." };
 
 const posts = [
   { slug: "heart-health-everyday", title: "Small habits for a healthier heart", excerpt: "Practical daily choices that can support your long-term heart health.", category: "Heart health", readTime: "4 min read", icon: HeartPulse },

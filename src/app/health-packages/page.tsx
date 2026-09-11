@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
 
-export const metadata = { title: "Health Packages | Health Care .Pvt .Ltd" };
+export const metadata = { title: "Health packages", description: "Browse preventive health packages designed to help you stay informed and well." };
 
 const packages = [
   { icon: Sparkles, name: "Essential Wellness", price: "₹1,999", copy: "A considered annual check-up for everyday confidence.", includes: ["Physician consultation", "Basic blood profile", "Blood pressure and BMI review"] },

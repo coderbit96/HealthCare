@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Department } from "@/models/Department";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Hospital departments", description: "Explore our specialist hospital departments, services and coordinated patient care." };
 type PublicDepartment = { name: string; description?: string; services?: string[] };
 
 export default async function Departments() {

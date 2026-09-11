@@ -6,6 +6,15 @@ import { SESSION_COOKIE } from "@/lib/server-auth";
 import { limit } from "@/lib/security/rate-limit";
 import { audit } from "@/lib/audit";
 
+function sessionErrorResponse(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  const serviceUnavailable = /Firebase Admin|Mongo|Mongoose|database|ECONN|ETIMEDOUT|ENOTFOUND/i.test(message);
+  const responseMessage = serviceUnavailable
+    ? "The secure sign-in service is temporarily unavailable. Please try again shortly."
+    : "Unable to create a secure sign-in session.";
+  return NextResponse.json({ error: responseMessage }, { status: serviceUnavailable ? 503 : 401 });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const limiter = limit(`session:${request.headers.get("x-forwarded-for") ?? "local"}`, 10, 60_000);
@@ -21,6 +30,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set(SESSION_COOKIE, await createSessionCookie(idToken), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 5 });
     await audit(identity.uid, "auth.login", "User", user._id.toString(), { role: user.role });
     return response;
-  } catch (error) { console.error("Session creation failed", error); return NextResponse.json({ error: "Unable to create secure session" }, { status: 401 }); }
+  } catch (error) {
+    console.error("Session creation failed", error);
+    return sessionErrorResponse(error);
+  }
 }
 export function DELETE() { const response = NextResponse.json({ ok: true }); response.cookies.set(SESSION_COOKIE, "", { httpOnly: true, expires: new Date(0), path: "/" }); return response; }

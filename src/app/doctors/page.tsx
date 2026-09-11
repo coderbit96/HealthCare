@@ -2,7 +2,7 @@ import Image from "next/image";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
 
-export const metadata = { title: "Doctors | Health Care .Pvt .Ltd" };
+export const metadata = { title: "Find a doctor", description: "Meet experienced Health Care Pvt. Ltd. specialists and find the right doctor for your needs." };
 
 const doctors = [
   { initials: "AS", name: "Dr. Ananya Sen", department: "Cardiology", specialty: "Consultant Cardiologist", focus: "Preventive cardiology and heart rhythm care", image: "/images/doctors/dr-ananya-sen.png" },
