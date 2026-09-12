@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { audit } from "@/lib/audit";
 import { getRequestUser, requirePermission } from "@/lib/server-auth";
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requirePermission(request, "settings:write");
     const department = await Department.create(departmentSchema.parse(await request.json()));
+    revalidateTag("public-departments", "max");
     await audit(user.firebaseUid, "department.created", "Department", department._id.toString(), { name: department.name, published: department.published });
     return NextResponse.json(department, { status: 201 });
   } catch (error) {
@@ -40,6 +42,7 @@ export async function PATCH(request: NextRequest) {
     const { id, ...changes } = updateSchema.parse(await request.json());
     const department = await Department.findByIdAndUpdate(id, { $set: changes }, { new: true, runValidators: true });
     if (!department) return NextResponse.json({ error: "Department not found" }, { status: 404 });
+    revalidateTag("public-departments", "max");
     await audit(user.firebaseUid, "department.updated", "Department", id, { fields: Object.keys(changes) });
     return NextResponse.json(department);
   } catch (error) {

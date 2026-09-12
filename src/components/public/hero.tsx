@@ -1,24 +1,10 @@
-"use client";
-
 import { ArrowRight, CalendarDays, Phone, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLayoutEffect, useRef } from "react";
-import { gsap } from "gsap";
 
 export type HeroContent = { eyebrow?: string; title?: string; highlight?: string; description?: string; image?: string; emergencyNumber?: string };
 export function Hero({ content = {} }: { content?: HeroContent }) {
-  const root = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const context = gsap.context(() => {
-      gsap.from("[data-hero-item]", { y: 24, opacity: 0, duration: .7, stagger: .1, ease: "power3.out" });
-      gsap.to("[data-orbit]", { y: -10, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
-    }, root);
-    return () => context.revert();
-  }, []);
-
-  return <section ref={root} className="relative isolate overflow-hidden bg-canvas">
+  return <section className="relative isolate overflow-hidden bg-canvas">
     <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_75%_15%,#e3f0ed_0,transparent_55%),radial-gradient(ellipse_at_5%_85%,#fbeae5_0,transparent_45%)]" />
     <div className="mx-auto grid max-w-7xl gap-14 px-5 pb-24 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pb-32 lg:pt-24">
       <div className="self-center">
