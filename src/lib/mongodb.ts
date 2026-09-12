@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+function normaliseMongoUri(value: string | undefined) {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/^(?:"|')|(?:"|')$/g, "");
+}
+
+const MONGODB_URI = normaliseMongoUri(process.env.MONGODB_URI);
 
 if (!MONGODB_URI) {
   console.warn("MONGODB_URI is not set. Database-backed routes will return a configuration error.");
