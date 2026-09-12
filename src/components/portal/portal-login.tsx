@@ -28,6 +28,8 @@ function loginFeedback(error: unknown, provider: "password" | "google") {
   const code = typeof error === "object" && error && "code" in error ? String((error as { code?: string }).code) : "";
   if (code === "auth/too-many-requests") return { title: "Too many attempts", message: "Please wait a moment before trying again." };
   if (code === "auth/network-request-failed") return { title: "Connection problem", message: "Check your internet connection and try again." };
+  if (code === "auth/invalid-api-key") return { title: "Sign-in configuration error", message: "The Firebase web configuration is invalid. Contact the hospital administrator." };
+  if (code === "auth/operation-not-allowed") return { title: "Password sign-in unavailable", message: "Email and password sign-in is not enabled for this Firebase project." };
   if (code === "auth/user-disabled") return { title: "Account unavailable", message: "This account has been disabled. Contact the hospital administrator." };
   if (provider === "google" && code === "auth/popup-closed-by-user") return { title: "Sign-in cancelled", message: "The Google sign-in window was closed before completion." };
   return { title: "Invalid login", message: fallback };
