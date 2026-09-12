@@ -20,7 +20,7 @@ After changing any `NEXT_PUBLIC_*` variable, redeploy: Next.js embeds public val
 5. Put `MONGODB_URI` and the three `FIREBASE_ADMIN_*` values in AWS Secrets Manager, and inject them into the ECS task as secrets. Do not bake them into the image, task definition, or source control.
 6. Configure the ALB health check as `GET /api/health` and enable HTTPS with ACM.
 
-The container starts with `node server.js`, listens on `0.0.0.0:3000`, and includes its own `/api/health` health check.
+The Docker build sets `NEXT_OUTPUT=standalone` only for AWS. Vercel keeps the standard Next.js output that its build adapter requires. The container starts with `node server.js`, listens on `0.0.0.0:3000`, and includes its own `/api/health` health check.
 
 ### Local container verification
 
