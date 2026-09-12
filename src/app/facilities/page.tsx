@@ -2,9 +2,10 @@ import Image from "next/image";
 import { Ambulance, Clock3, HeartPulse, Pill, ScanLine, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
+import { publicMetadata } from "@/lib/seo";
 import { SITE_IMAGES } from "@/lib/site-content";
 
-export const metadata = { title: "Hospital facilities", description: "Explore our modern hospital facilities, diagnostics, emergency support and patient-focused spaces." };
+export const metadata = publicMetadata({ title: "Hospital facilities in Kolkata", description: "Explore modern hospital facilities, diagnostics, emergency support and patient-focused spaces at Health Care Pvt. Ltd. in Kolkata.", path: "/facilities" });
 
 const facilities = [
   { icon: Ambulance, title: "24/7 emergency care", text: "Rapid assessment and coordinated emergency response, day and night." },

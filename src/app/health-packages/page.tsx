@@ -2,8 +2,9 @@ import { ArrowRight, CheckCircle2, HeartPulse, ShieldPlus, Sparkles } from "luci
 import Link from "next/link";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Health packages", description: "Browse preventive health packages designed to help you stay informed and well." };
+export const metadata = publicMetadata({ title: "Preventive health check-up packages", description: "Browse preventive health check-up packages from Health Care Pvt. Ltd. in Kolkata, designed to help you stay informed and well.", path: "/health-packages" });
 
 const packages = [
   { icon: Sparkles, name: "Essential Wellness", price: "₹1,999", copy: "A considered annual check-up for everyday confidence.", includes: ["Physician consultation", "Basic blood profile", "Blood pressure and BMI review"] },

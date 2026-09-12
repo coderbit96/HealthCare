@@ -2,9 +2,10 @@ import Image from "next/image";
 import { Camera, HeartHandshake } from "lucide-react";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
+import { publicMetadata } from "@/lib/seo";
 import { SITE_IMAGES } from "@/lib/site-content";
 
-export const metadata = { title: "Hospital gallery", description: "Take a look at Health Care Pvt. Ltd., our people, facilities and patient-first spaces." };
+export const metadata = publicMetadata({ title: "Hospital gallery", description: "Explore Health Care Pvt. Ltd., our people, facilities and patient-first spaces in Kolkata.", path: "/gallery" });
 
 const moments = [
   { src: SITE_IMAGES.hospital, alt: "Modern hospital exterior", label: "Our hospital" },

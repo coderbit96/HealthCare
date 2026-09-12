@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Find a doctor", description: "Meet experienced Health Care Pvt. Ltd. specialists and find the right doctor for your needs." };
+export const metadata = publicMetadata({ title: "Find specialist doctors in Kolkata", description: "Meet experienced Health Care Pvt. Ltd. specialists in Kolkata and find the right doctor for your needs.", path: "/doctors" });
 
 const doctors = [
   { initials: "AS", name: "Dr. Ananya Sen", department: "Cardiology", specialty: "Consultant Cardiologist", focus: "Preventive cardiology and heart rhythm care", image: "/images/doctors/dr-ananya-sen.png" },

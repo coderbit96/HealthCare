@@ -2,8 +2,9 @@ import { Ambulance, ArrowRight, CalendarDays, Clock3, MapPin, Phone } from "luci
 import Link from "next/link";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Contact us", description: "Contact Health Care Pvt. Ltd. for appointments, directions, general enquiries and 24/7 emergency care." };
+export const metadata = publicMetadata({ title: "Contact our Kolkata hospital", description: "Contact Health Care Pvt. Ltd. in Kolkata for appointments, directions, general enquiries and 24/7 emergency care.", path: "/contact" });
 
 const contactOptions = [
   { icon: CalendarDays, title: "Appointments and enquiries", text: "Speak with our care team for appointments, directions and general hospital information.", action: "+91 33 4000 2000", href: "tel:+913340002000" },

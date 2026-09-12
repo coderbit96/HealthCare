@@ -4,9 +4,10 @@ import { PageShell } from "@/components/public/page-shell";
 import { DEPARTMENTS } from "@/lib/site-content";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Department } from "@/models/Department";
+import { publicMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Hospital departments", description: "Explore our specialist hospital departments, services and coordinated patient care." };
+export const metadata = publicMetadata({ title: "Hospital departments in Kolkata", description: "Explore specialist hospital departments, services and coordinated patient care at Health Care Pvt. Ltd. in Kolkata.", path: "/departments" });
 type PublicDepartment = { name: string; description?: string; services?: string[] };
 
 const getPublishedDepartments = unstable_cache(

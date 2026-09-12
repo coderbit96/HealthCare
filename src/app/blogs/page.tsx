@@ -2,8 +2,9 @@ import { ArrowRight, BookOpen, Clock3, HeartPulse, Stethoscope } from "lucide-re
 import Link from "next/link";
 import { PageShell } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/reveal";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Health blog", description: "Helpful, evidence-informed health articles from the Health Care Pvt. Ltd. clinical team." };
+export const metadata = publicMetadata({ title: "Health and wellness articles", description: "Evidence-informed health articles from the Health Care Pvt. Ltd. clinical team in Kolkata.", path: "/blogs" });
 
 const posts = [
   { slug: "heart-health-everyday", title: "Small habits for a healthier heart", excerpt: "Practical daily choices that can support your long-term heart health.", category: "Heart health", readTime: "4 min read", icon: HeartPulse },
