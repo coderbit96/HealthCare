@@ -18,7 +18,7 @@ function adminApp() {
   if (getApps().length) return getApps()[0]!;
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
   const projectId = normaliseEnvironmentValue(process.env.FIREBASE_ADMIN_PROJECT_ID);
-  const clientEmail = normaliseEnvironmentValue(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
+  const clientEmail = normaliseEnvironmentValue(process.env.FIREBASE_ADMIN_CLIENT_EMAIL)?.replace(/\\@/g, "@");
   const privateKey = normalisePrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
   if (!raw && projectId && clientEmail && privateKey) {
     if (!privateKey.startsWith("-----BEGIN PRIVATE KEY-----")) {
